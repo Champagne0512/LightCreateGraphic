@@ -1,0 +1,62 @@
+<view class="container">
+  <!-- 头部欢迎区域 -->
+  <view class="onboarding-header">
+    <text class="welcome-icon">🎨</text>
+    <text class="welcome-title">欢迎使用轻创图文</text>
+    <text class="welcome-subtitle">简单三步，创作专业设计</text>
+  </view>
+
+  <!-- 步骤引导区域 -->
+  <view class="steps-section">
+    <!-- 步骤1：选择模板 -->
+    <view class="step-card">
+      <view class="step-header">
+        <view class="step-number">1</view>
+        <text class="step-title">选择模板</text>
+      </view>
+      <text class="step-content">在首页浏览丰富的模板库，选择适合您场景的设计模板开始创作</text>
+      <view class="step-features">
+        <text class="step-feature">海量模板</text>
+        <text class="step-feature">分类筛选</text>
+        <text class="step-feature">快速预览</text>
+      </view>
+    </view>
+
+    <!-- 步骤2：编辑设计 -->
+    <view class="step-card">
+      <view class="step-header">
+        <view class="step-number">2</view>
+        <text class="step-title">编辑设计</text>
+      </view>
+      <text class="step-content">使用强大的编辑器添加文字、形状、图片等元素，自由拖拽调整位置和大小</text>
+      <view class="step-features">
+        <text class="step-feature">拖拽编辑</text>
+        <text class="step-feature">实时预览</text>
+        <text class="step-feature">撤销重做</text>
+      </view>
+    </view>
+
+    <!-- 步骤3：导出分享 -->
+    <view class="step-card">
+      <view class="step-header">
+        <view class="step-number">3</view>
+        <text class="step-title">导出分享</text>
+      </view>
+      <text class="step-content">一键导出高清图片，支持保存到相册或直接分享到社交媒体平台</text>
+      <view class="step-features">
+        <text class="step-feature">高清导出</text>
+        <text class="step-feature">云端存储</text>
+        <text class="step-feature">快捷分享</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部开始按钮 -->
+  <view class="cta-section">
+    <button class="cta-button" bindtap="goCreate">
+      <text class="cta-icon">🚀</text>
+      <text>开始创作</text>
+    </button>
+  </view>
+</view>
+

@@ -1,0 +1,190 @@
+<view class="editor-container">
+  <!-- 画布区域 -->
+  <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
+    <movable-area style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
+      <block wx:for="{{work.elements}}" wx:key="id">
+        <movable-view class="mv-el {{selectedId===item.id?'sel':''}}" direction="all"
+          x="{{ (item.x - (item._w || 80)/2) * scale }}" y="{{ (item.y - (item._h || 40)/2) * scale }}"
+          style="width: {{ (item._w || 80) * scale }}px; height: {{ (item._h || 40) * scale }}px;"
+          data-id="{{item.id}}" bindtap="selectEl" bindchange="onMove" inertia>
+          <view wx:if="{{item.type==='text'}}" style="color: {{item.color}}; font-size: {{item.fontSize}}rpx; text-align: {{item.align||'left'}}; padding: 8rpx;">
+            {{item.text}}
+          </view>
+          <view wx:elif="{{item.type==='rect'}}" style="width:100%;height:100%;background: {{item.color}}; border-radius: 8rpx;"></view>
+          <image wx:elif="{{item.type==='image'}}" src="{{item.src}}" mode="scaleToFill" style="width:100%;height:100%;border-radius:8rpx;"/>
+        </movable-view>
+      </block>
+      <view wx:if="{{showVGuide}}" class="guide v" style="left: {{ work.size.w/2 * scale }}px;"></view>
+      <view wx:if="{{showHGuide}}" class="guide h" style="top: {{ work.size.h/2 * scale }}px;"></view>
+    </movable-area>
+    <canvas canvas-id="editorCanvas" style="position:absolute;left:-9999px;top:-9999px; width: {{work.size.w}}px; height: {{work.size.h}}px;"/>
+  </view>
+
+  <!-- 属性面板 -->
+  <view wx:if="{{selected}}" class="property-panel">
+    <view class="panel-header">
+      <text class="panel-icon">⚙️</text>
+      <text class="panel-title">属性编辑</text>
+    </view>
+    
+    <!-- 颜色选择 -->
+    <view class="property-section">
+      <text class="section-title">颜色</text>
+      <view class="color-palette">
+        <block wx:for="{{colors}}" wx:key="*this">
+          <view class="color-chip {{selected.color===item?'active':''}}" 
+                style="background: {{item}}" 
+                data-color="{{item}}" 
+                bindtap="setColor"></view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 文字属性 -->
+    <view wx:if="{{selected && selected.type==='text'}}" class="property-section">
+      <text class="section-title">文字内容</text>
+      <view class="property-row">
+        <text class="property-label">内容</text>
+        <input class="property-input" placeholder="输入文字" value="{{selected.text}}" data-key="text" bindinput="onPropInput"/>
+      </view>
+      <view class="property-row">
+        <text class="property-label">大小</text>
+        <view class="slider-container">
+          <slider min="20" max="120" value="{{selected.fontSize||36}}" data-key="fontSize" bindchange="onPropSlider" style="flex:1;"></slider>
+          <text class="slider-value">{{selected.fontSize||36}}px</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 形状属性 -->
+    <view wx:if="{{selected && selected.type==='rect'}}" class="property-section">
+      <text class="section-title">尺寸</text>
+      <view class="property-row">
+        <text class="property-label">宽度</text>
+        <view class="slider-container">
+          <slider min="50" max="800" value="{{selected.width||100}}" data-key="width" bindchange="onPropSlider" style="flex:1;"></slider>
+          <text class="slider-value">{{selected.width||100}}px</text>
+        </view>
+      </view>
+      <view class="property-row">
+        <text class="property-label">高度</text>
+        <view class="slider-container">
+          <slider min="20" max="800" value="{{selected.height||50}}" data-key="height" bindchange="onPropSlider" style="flex:1;"></slider>
+          <text class="slider-value">{{selected.height||50}}px</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 图片属性 -->
+    <view wx:if="{{selected && selected.type==='image'}}" class="property-section">
+      <text class="section-title">图片设置</text>
+      <view class="property-row">
+        <text class="property-label">宽度</text>
+        <view class="slider-container">
+          <slider min="50" max="1200" value="{{selected.width||200}}" data-key="width" bindchange="onPropSlider" style="flex:1;"></slider>
+          <text class="slider-value">{{selected.width||200}}px</text>
+        </view>
+      </view>
+      <view class="property-row">
+        <text class="property-label">高度</text>
+        <view class="slider-container">
+          <slider min="50" max="1200" value="{{selected.height||200}}" data-key="height" bindchange="onPropSlider" style="flex:1;"></slider>
+          <text class="slider-value">{{selected.height||200}}px</text>
+        </view>
+      </view>
+      <view class="action-buttons">
+        <button class="action-btn" bindtap="replaceImage">替换图片</button>
+      </view>
+    </view>
+
+    <!-- 图层操作 -->
+    <view class="action-buttons">
+      <button class="action-btn" bindtap="bringForward">上移</button>
+      <button class="action-btn" bindtap="sendBackward">下移</button>
+      <button class="action-btn" bindtap="duplicateSelected">复制</button>
+      <button class="action-btn" bindtap="deleteSelected">删除</button>
+    </view>
+  </view>
+
+  <!-- 底部工具栏 -->
+  <view class="toolbar">
+    <view class="toolbar-group">
+      <button class="tool-btn" bindtap="addText">
+        <text>📝</text>
+        <text>文字</text>
+      </button>
+      <button class="tool-btn" bindtap="addRect">
+        <text>🔲</text>
+        <text>形状</text>
+      </button>
+      <button class="tool-btn" bindtap="addImage">
+        <text>🖼️</text>
+        <text>图片</text>
+      </button>
+      <button class="tool-btn" bindtap="changeBg">
+        <text>🎨</text>
+        <text>背景</text>
+      </button>
+    </view>
+    <view class="toolbar-group">
+      <button class="tool-btn" bindtap="undo">
+        <text>↩️</text>
+        <text>撤销</text>
+      </button>
+      <button class="tool-btn" bindtap="redo">
+        <text>↪️</text>
+        <text>重做</text>
+      </button>
+      <button class="tool-btn primary" bindtap="openExportPanel">
+        <text>📤</text>
+        <text>导出</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 导出面板 -->
+  <view wx:if="{{showExportPanel}}" class="export-overlay" bindtap="closeExportPanel">
+    <view class="export-panel" bindtap="stopPropagation">
+      <view class="export-header">
+        <text class="export-title">导出设置</text>
+        <text class="export-subtitle">选择导出格式和选项</text>
+      </view>
+      
+      <view class="export-options">
+        <view class="option-row">
+          <text class="option-label">导出格式</text>
+          <view class="option-controls">
+            <view class="option-radio">
+              <radio checked="{{exportOpt.format==='jpg'}}" value="jpg" bindchange="onFormatChange"/>
+              <text>JPG</text>
+            </view>
+            <view class="option-radio">
+              <radio checked="{{exportOpt.format==='png'}}" value="png" bindchange="onFormatChange"/>
+              <text>PNG</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="option-row">
+          <text class="option-label">透明背景</text>
+          <switch class="option-switch" checked="{{exportOpt.transparent}}" bindchange="onTransparentChange"/>
+        </view>
+        
+        <view class="option-row">
+          <text class="option-label">角标水印</text>
+          <switch class="option-switch" checked="{{exportOpt.watermark}}" bindchange="onWatermarkChange"/>
+        </view>
+        
+        <view class="option-row">
+          <text class="option-label">云端存储</text>
+          <switch class="option-switch" checked="{{exportOpt.upload}}" bindchange="onUploadChange"/>
+        </view>
+      </view>
+      
+      <view class="export-actions">
+        <button class="tool-btn" bindtap="closeExportPanel">取消</button>
+        <button class="tool-btn primary" bindtap="exportImg">导出</button>
+      </view>
+    </view>
+  </view>
+</view>

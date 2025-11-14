@@ -1,0 +1,213 @@
+/* === 用户引导页面 - 创意入门风格 === */
+
+.container {
+  padding: 0;
+  background: var(--bg-light);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 头部区域 */
+.onboarding-header {
+  width: 100%;
+  background: var(--primary-gradient);
+  padding: 80rpx 32rpx 60rpx;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.welcome-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+  animation: bounce 2s infinite;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10rpx);
+  }
+  60% {
+    transform: translateY(-5rpx);
+  }
+}
+
+.welcome-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  margin-bottom: 12rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.welcome-subtitle {
+  font-size: 28rpx;
+  opacity: 0.9;
+  position: relative;
+  z-index: 2;
+}
+
+/* 步骤卡片区域 */
+.steps-section {
+  flex: 1;
+  padding: 32rpx;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.step-card {
+  background: var(--bg-card);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background: var(--primary-gradient);
+  border-radius: 4rpx 4rpx 0 0;
+}
+
+.step-card:active {
+  transform: translateY(-2rpx);
+  box-shadow: var(--shadow-creative);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.step-number {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 700;
+  box-shadow: 0 4rpx 12rpx rgba(139, 92, 246, 0.3);
+}
+
+.step-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.step-content {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.step-features {
+  margin-top: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.step-feature {
+  background: var(--bg-light);
+  color: var(--creative-purple);
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  border: 1rpx solid rgba(139, 92, 246, 0.2);
+}
+
+/* 底部按钮区域 */
+.cta-section {
+  padding: 32rpx;
+  width: 100%;
+  background: var(--bg-card);
+  border-top: 1rpx solid var(--border-light);
+}
+
+.cta-button {
+  width: 100%;
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  box-shadow: var(--shadow-creative);
+  border: none;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.cta-button:active {
+  transform: translateY(-2rpx);
+  box-shadow: 0 8rpx 24rpx rgba(139, 92, 246, 0.4);
+}
+
+.cta-icon {
+  font-size: 36rpx;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .onboarding-header {
+    padding: 60rpx 24rpx 40rpx;
+  }
+  
+  .welcome-title {
+    font-size: 36rpx;
+  }
+  
+  .welcome-subtitle {
+    font-size: 24rpx;
+  }
+  
+  .steps-section {
+    padding: 24rpx;
+  }
+  
+  .step-card {
+    padding: 24rpx;
+  }
+}
+

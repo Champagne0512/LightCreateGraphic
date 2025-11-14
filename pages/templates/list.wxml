@@ -1,0 +1,100 @@
+<view class="template-container">
+  <!-- 顶部筛选栏 -->
+  <view class="filter-section">
+    <view class="filter-header">
+      <text class="filter-title">模板库</text>
+      <view class="filter-actions">
+        <view class="filter-btn" bindtap="toggleSort">
+          <text class="filter-icon">🔽</text>
+          <text class="filter-text">排序</text>
+        </view>
+        <view class="filter-btn" bindtap="toggleFilter">
+          <text class="filter-icon">⚙️</text>
+          <text class="filter-text">筛选</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 筛选条件展示 -->
+    <view class="active-filters" wx:if="{{sceneName || kw}}">
+      <text class="filter-label">当前筛选：</text>
+      <view class="filter-chips">
+        <view wx:if="{{sceneName}}" class="filter-chip active">
+          <text class="chip-text">{{sceneName}}</text>
+          <text class="chip-close" bindtap="clearSceneFilter">×</text>
+        </view>
+        <view wx:if="{{kw}}" class="filter-chip active">
+          <text class="chip-text">关键词：{{kw}}</text>
+          <text class="chip-close" bindtap="clearKeywordFilter">×</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 模板网格 -->
+  <view class="template-grid">
+    <block wx:for="{{list}}" wx:key="id">
+      <view class="template-card card" bindtap="useTemplate" data-id="{{item.id}}">
+        <!-- 模板预览区域 -->
+        <view class="template-preview" style="background: {{item.coverColor}};">
+          <view class="template-overlay">
+            <text class="template-name">{{item.name}}</text>
+            <view class="template-meta">
+              <view class="template-badge">{{item.scene || '通用'}}</view>
+              <view class="template-actions">
+                <text class="action-icon">👁️</text>
+                <text class="action-count">{{item.views || 0}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 模板信息区域 -->
+        <view class="template-info">
+          <view class="template-header">
+            <text class="template-title">{{item.name}}</text>
+            <view class="template-rating">
+              <text class="rating-icon">⭐</text>
+              <text class="rating-value">{{item.rating || 4.8}}</text>
+            </view>
+          </view>
+          
+          <text class="template-desc">{{item.description || '专业的图文设计模板'}}</text>
+          
+          <view class="template-footer">
+            <view class="template-stats">
+              <text class="stat-item">尺寸：{{item.size || '1:1'}}</text>
+              <text class="stat-item">元素：{{item.elements || 5}}+</text>
+            </view>
+            <view class="template-tags">
+              <text class="template-tag" wx:for="{{item.tags || ['创意', '简约']}}" wx:key="*this">{{item}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 使用按钮 -->
+        <view class="template-cta">
+          <button class="btn-primary use-btn" bindtap="useTemplate" data-id="{{item.id}}">
+            <text class="btn-text">使用模板</text>
+          </button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!list.length}}" class="empty-state">
+    <view class="empty-icon">🎨</view>
+    <text class="empty-title">暂无模板</text>
+    <text class="empty-desc">请尝试调整筛选条件或联系管理员</text>
+    <button class="btn-secondary" bindtap="resetFilters">重置筛选</button>
+  </view>
+
+  <!-- 加载更多 -->
+  <view wx:if="{{hasMore}}" class="load-more">
+    <button class="btn-secondary load-btn" bindtap="loadMore">
+      <text class="btn-text">加载更多模板</text>
+    </button>
+  </view>
+</view>
+

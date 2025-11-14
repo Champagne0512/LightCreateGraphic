@@ -1,0 +1,30 @@
+<view class="container">
+  <view class="card sec">
+    <view class="title">草稿箱</view>
+    <block wx:if="{{drafts.length}}">
+      <block wx:for="{{drafts}}" wx:key="id">
+        <view class="draft" bindtap="openDraft" data-id="{{item.id}}">
+          <text>{{item.id}}</text>
+          <text class="muted">{{item.size.w}}x{{item.size.h}}</text>
+        </view>
+      </block>
+    </block>
+    <view wx:else class="muted">暂无草稿</view>
+  </view>
+
+  <view class="card sec">
+    <view class="title">关于</view>
+    <view class="row">轻创图文 LightCreate Graphic</view>
+    <view class="row muted">此为雏形版本，用于验证核心流程。</view>
+  </view>
+
+  <view class="card sec" wx:if="{{cloudWorks.length}}">
+    <view class="title">云端作品（Supabase）</view>
+    <block wx:for="{{cloudWorks}}" wx:key="work_id">
+      <view class="draft">
+        <text>{{item.work_name || item.work_id}}</text>
+        <text class="muted">{{item.scene_type || '未知场景'}}</text>
+      </view>
+    </block>
+  </view>
+</view>
