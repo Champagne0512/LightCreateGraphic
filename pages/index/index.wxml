@@ -91,12 +91,12 @@
             <text class="scene-icon">{{cat.icon || '✨'}}</text>
             <text class="scene-name">{{cat.name}}</text>
           </view>
-          <view class="scene-count">{{cat.children?.length || 0}} 个模板</view>
+          <view class="scene-count">{{cat.children && cat.children.length || 0}} 个模板</view>
           <view class="scene-tags">
-            <block wx:for="{{cat.children.slice(0, 3)}}" wx:key="id" wx:for-item="sub">
+            <block wx:for="{{cat.children ? cat.children.slice(0, 3) : []}}" wx:key="id" wx:for-item="sub">
               <text class="scene-tag">{{sub.name}}</text>
             </block>
-            <text wx:if="{{cat.children.length > 3}}" class="scene-more">+{{cat.children.length - 3}}个</text>
+            <text wx:if="{{cat.children && cat.children.length > 3}}" class="scene-more">+{{cat.children.length - 3}}个</text>
           </view>
         </view>
       </block>
