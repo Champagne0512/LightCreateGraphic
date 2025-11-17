@@ -1,6 +1,12 @@
 <view class="editor-container">
   <!-- 画布区域 -->
   <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
+    <!-- 画笔图层 -->
+    <canvas wx:if="{{drawMode}}" canvas-id="brushCanvas" 
+            style="position:absolute;left:0;top:0;width: {{displayWidth}}px; height: {{displayHeight}}px;"
+            bindtouchstart="onBrushStart" bindtouchmove="onBrushMove" bindtouchend="onBrushEnd"
+            bindtouchcancel="onBrushEnd"/>
+    
     <movable-area style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
       <block wx:for="{{work.elements}}" wx:key="id">
         <movable-view class="mv-el {{selectedId===item.id?'sel':''}}" direction="all"
@@ -106,9 +112,40 @@
     </view>
   </view>
 
+  <!-- 画笔工具栏 -->
+  <view wx:if="{{drawMode}}" class="brush-toolbar">
+    <view class="brush-controls">
+      <view class="brush-size">
+        <text class="brush-label">粗细</text>
+        <slider min="1" max="20" value="{{brushSize}}" bindchange="onBrushSizeChange" style="width: 120rpx;"/>
+        <text class="brush-value">{{brushSize}}px</text>
+      </view>
+      <view class="brush-color">
+        <text class="brush-label">颜色</text>
+        <view class="color-palette">
+          <block wx:for="{{colors}}" wx:key="*this">
+            <view class="color-chip {{brushColor===item?'active':''}}" 
+                  style="background: {{item}}" 
+                  data-color="{{item}}" 
+                  bindtap="setBrushColor"></view>
+          </block>
+        </view>
+      </view>
+      <button class="brush-action-btn" bindtap="clearDrawing">清空</button>
+    </view>
+  </view>
+
   <!-- 底部工具栏 -->
   <view class="toolbar">
     <view class="toolbar-group">
+      <button class="tool-btn {{drawMode==='brush'?'active':''}}" bindtap="toggleBrushMode">
+        <text>✏️</text>
+        <text>画笔</text>
+      </button>
+      <button class="tool-btn {{drawMode==='eraser'?'active':''}}" bindtap="toggleEraserMode">
+        <text>🧽</text>
+        <text>擦除</text>
+      </button>
       <button class="tool-btn" bindtap="addText">
         <text>📝</text>
         <text>文字</text>

@@ -49,6 +49,144 @@
   transform: scale(0.98);
 }
 
+/* 画笔工具栏 */
+.brush-toolbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 120rpx;
+  background: var(--bg-card);
+  border-top: 1rpx solid var(--border-light);
+  border-bottom: 1rpx solid var(--border-light);
+  padding: 20rpx 32rpx;
+  backdrop-filter: blur(20rpx);
+  z-index: 99;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.brush-controls {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  justify-content: space-between;
+}
+
+.brush-size, .brush-color {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.brush-label {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  font-weight: 600;
+  min-width: 60rpx;
+}
+
+.brush-value {
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  min-width: 40rpx;
+}
+
+.brush-action-btn {
+  background: var(--bg-light);
+  border: 2rpx solid var(--border-light);
+  border-radius: 12rpx;
+  padding: 12rpx 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.brush-action-btn:active {
+  background: var(--creative-red);
+  color: white;
+  border-color: var(--creative-red);
+}
+
+/* 画笔工具栏 */
+.brush-toolbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 120rpx;
+  background: var(--bg-card);
+  border-top: 1rpx solid var(--border-light);
+  border-bottom: 1rpx solid var(--border-light);
+  padding: 20rpx 32rpx;
+  backdrop-filter: blur(20rpx);
+  z-index: 99;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.brush-controls {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  justify-content: space-between;
+}
+
+.brush-size, .brush-color {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.brush-label {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  font-weight: 600;
+  min-width: 60rpx;
+}
+
+.brush-value {
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  min-width: 40rpx;
+}
+
+.brush-action-btn {
+  background: var(--bg-light);
+  border: 2rpx solid var(--border-light);
+  border-radius: 12rpx;
+  padding: 12rpx 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.brush-action-btn:active {
+  background: var(--creative-red);
+  color: white;
+  border-color: var(--creative-red);
+}
+
 /* 工具栏 */
 .toolbar {
   position: fixed;
@@ -90,6 +228,20 @@
   color: white;
   border-color: var(--creative-blue);
   transform: translateY(-2rpx);
+}
+
+.tool-btn.active {
+  background: var(--creative-purple);
+  color: white;
+  border-color: var(--creative-purple);
+  box-shadow: 0 4rpx 16rpx rgba(139, 92, 246, 0.3);
+}
+
+.tool-btn.active {
+  background: var(--creative-purple);
+  color: white;
+  border-color: var(--creative-purple);
+  box-shadow: 0 4rpx 16rpx rgba(139, 92, 246, 0.3);
 }
 
 .tool-btn.primary {
