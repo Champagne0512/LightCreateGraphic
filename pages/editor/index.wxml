@@ -1,18 +1,18 @@
 <view class="editor-container">
   <!-- 画布区域 -->
-  <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
-    <!-- 画笔图层 -->
+  <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px; margin-top: 40rpx;">
+    <!-- 画笔图层 - 放在最上层确保能接收触摸事件 -->
     <canvas wx:if="{{drawMode}}" canvas-id="brushCanvas" 
-            style="position:absolute;left:0;top:0;width: {{displayWidth}}px; height: {{displayHeight}}px;"
-            bindtouchstart="onBrushStart" bindtouchmove="onBrushMove" bindtouchend="onBrushEnd"
-            bindtouchcancel="onBrushEnd"/>
+            style="position:absolute;left:0;top:0;width: {{displayWidth}}px; height: {{displayHeight}}px;z-index:999;"
+            catchtouchstart="onBrushStart" catchtouchmove="onBrushMove" catchtouchend="onBrushEnd"
+            catchtouchcancel="onBrushEnd"/>
     
-    <movable-area style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
+    <movable-area style="width: {{displayWidth}}px; height: {{displayHeight}}px;position:relative;z-index:1;">
       <block wx:for="{{work.elements}}" wx:key="id">
         <movable-view class="mv-el {{selectedId===item.id?'sel':''}}" direction="all"
           x="{{ (item.x - (item._w || 80)/2) * scale }}" y="{{ (item.y - (item._h || 40)/2) * scale }}"
           style="width: {{ (item._w || 80) * scale }}px; height: {{ (item._h || 40) * scale }}px;"
-          data-id="{{item.id}}" bindtap="selectEl" bindchange="onMove" inertia>
+          data-id="{{item.id}}" bindtap="selectEl" bindchange="onMove" bindtouchend="onMoveEnd" inertia>
           <view wx:if="{{item.type==='text'}}" style="color: {{item.color}}; font-size: {{item.fontSize}}rpx; text-align: {{item.align||'left'}}; padding: 8rpx;">
             {{item.text}}
           </view>
@@ -158,12 +158,12 @@
         <text>🖼️</text>
         <text>图片</text>
       </button>
+    </view>
+    <view class="toolbar-group">
       <button class="tool-btn" bindtap="changeBg">
         <text>🎨</text>
         <text>背景</text>
       </button>
-    </view>
-    <view class="toolbar-group">
       <button class="tool-btn" bindtap="undo">
         <text>↩️</text>
         <text>撤销</text>
