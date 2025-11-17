@@ -23,10 +23,7 @@ Page({
 
   checkAdminAuth() {
     if (!app.globalData.isAdmin) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      })
+      wx.showToast({ title: '无权限访问', icon: 'none' })
       wx.navigateBack()
       return false
     }
@@ -34,41 +31,12 @@ Page({
   },
 
   loadTemplates() {
-    // 模拟模板数据
     const mockTemplates = [
-      {
-        id: 1,
-        name: '商务会议海报',
-        category: '商务海报',
-        coverUrl: '/images/templates/business-poster.jpg',
-        downloadCount: 156,
-        usageCount: 89,
-        status: 'active'
-      },
-      {
-        id: 2,
-        name: '产品促销海报',
-        category: '电商产品',
-        coverUrl: '/images/templates/promotion-poster.jpg',
-        downloadCount: 234,
-        usageCount: 167,
-        status: 'active'
-      },
-      {
-        id: 3,
-        name: '教育培训模板',
-        category: '教育培训',
-        coverUrl: '/images/templates/education-poster.jpg',
-        downloadCount: 89,
-        usageCount: 45,
-        status: 'inactive'
-      }
+      { id: 1, name: '商务会议海报', category: '商务海报', coverUrl: '/images/templates/business-poster.jpg', downloadCount: 156, usageCount: 89, status: 'active' },
+      { id: 2, name: '产品促销海报', category: '电商产品', coverUrl: '/images/templates/promotion-poster.jpg', downloadCount: 234, usageCount: 167, status: 'active' },
+      { id: 3, name: '教育培训模板', category: '教育培训', coverUrl: '/images/templates/education-poster.jpg', downloadCount: 89, usageCount: 45, status: 'inactive' }
     ]
-
-    this.setData({
-      templateList: mockTemplates,
-      filteredTemplates: mockTemplates
-    })
+    this.setData({ templateList: mockTemplates, filteredTemplates: mockTemplates })
   },
 
   onSearchInput(e) {
@@ -79,16 +47,8 @@ Page({
 
   filterTemplates(keyword) {
     const { templateList } = this.data
-    if (!keyword) {
-      this.setData({ filteredTemplates: templateList })
-      return
-    }
-
-    const filtered = templateList.filter(template =>
-      template.name.includes(keyword) ||
-      template.category.includes(keyword)
-    )
-    
+    if (!keyword) { this.setData({ filteredTemplates: templateList }); return }
+    const filtered = templateList.filter(t => t.name.includes(keyword) || t.category.includes(keyword))
     this.setData({ filteredTemplates: filtered })
   },
 
@@ -96,11 +56,7 @@ Page({
     this.setData({
       showTemplateModal: true,
       editingTemplate: null,
-      templateForm: {
-        name: '',
-        category: '',
-        coverUrl: ''
-      },
+      templateForm: { name: '', category: '', coverUrl: '' },
       categoryIndex: 0
     })
   },
@@ -110,18 +66,11 @@ Page({
     const template = this.data.templateList.find(t => t.id === id)
     if (template) {
       const categoryIndex = this.data.categories.indexOf(template.category)
-      this.setData({
-        showTemplateModal: true,
-        editingTemplate: template,
-        templateForm: { ...template },
-        categoryIndex: categoryIndex >= 0 ? categoryIndex : 0
-      })
+      this.setData({ showTemplateModal: true, editingTemplate: template, templateForm: { ...template }, categoryIndex: categoryIndex >= 0 ? categoryIndex : 0 })
     }
   },
 
-  hideTemplateModal() {
-    this.setData({ showTemplateModal: false })
-  },
+  hideTemplateModal() { this.setData({ showTemplateModal: false }) },
 
   onFormInput(e) {
     const field = e.currentTarget.dataset.field
@@ -135,70 +84,46 @@ Page({
     const index = e.detail.value
     const templateForm = { ...this.data.templateForm }
     templateForm.category = this.data.categories[index]
-    this.setData({
-      categoryIndex: index,
-      templateForm
-    })
+    this.setData({ categoryIndex: index, templateForm })
   },
 
   saveTemplate() {
     const { templateForm, editingTemplate } = this.data
-    
     if (!templateForm.name || !templateForm.category) {
-      wx.showToast({
-        title: '请填写完整信息',
-        icon: 'none'
-      })
+      wx.showToast({ title: '请填写完整信息', icon: 'none' })
       return
     }
-
-    // 模拟保存操作
-    wx.showToast({
-      title: editingTemplate ? '模板更新成功' : '模板添加成功',
-      icon: 'success'
-    })
-
+    wx.showToast({ title: editingTemplate ? '模板更新成功' : '模板添加成功', icon: 'success' })
     this.hideTemplateModal()
-    this.loadTemplates() // 重新加载数据
+    this.loadTemplates()
   },
 
   toggleTemplateStatus(e) {
-    const id = e.currentTarget.dataset.id
     const status = e.currentTarget.dataset.status
     const newStatus = status === 'active' ? 'inactive' : 'active'
-
     wx.showModal({
       title: '确认操作',
       content: `确定要${newStatus === 'active' ? '启用' : '禁用'}这个模板吗？`,
       success: (res) => {
         if (res.confirm) {
-          // 模拟状态更新
-          wx.showToast({
-            title: `模板已${newStatus === 'active' ? '启用' : '禁用'}`,
-            icon: 'success'
-          })
-          this.loadTemplates() // 重新加载数据
+          wx.showToast({ title: `模板已${newStatus === 'active' ? '启用' : '禁用'}`, icon: 'success' })
+          this.loadTemplates()
         }
       }
     })
   },
 
-  deleteTemplate(e) {
-    const id = e.currentTarget.dataset.id
-
+  deleteTemplate() {
     wx.showModal({
       title: '确认删除',
-      content: '确定要删除这个模板吗？此操作不可恢复。',
+      content: '确定要删除这个模板吗？此操作不可恢复',
       success: (res) => {
         if (res.confirm) {
-          // 模拟删除操作
-          wx.showToast({
-            title: '模板删除成功',
-            icon: 'success'
-          })
-          this.loadTemplates() // 重新加载数据
+          wx.showToast({ title: '模板删除成功', icon: 'success' })
+          this.loadTemplates()
         }
       }
     })
   }
 })
+

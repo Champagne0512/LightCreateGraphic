@@ -1,343 +1,198 @@
 -- =============================================
--- LightCreateGraphic 轻创图文数据库配置
--- Supabase 兼容的完整SQL文件
+-- LightCreateGraphic 轻创图文 - Supabase 完整数据库脚本
+-- 适配 Supabase SQL Editor，可多次安全执行
+-- 日期：2025-11-17
 -- =============================================
 
--- 启用必要的扩展
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- 扩展
+create extension if not exists pgcrypto with schema extensions;   -- 提供 gen_random_uuid / crypt / gen_salt
+create extension if not exists pgjwt with schema extensions;      -- 可选：如需自签 JWT 可启用（非必须）
 
 -- =============================================
--- 用户表 (users)
+-- 用户表（自管，适配小程序手机号+密码登录原型）
+-- 说明：如使用 Supabase Auth，请改为使用 auth.users + profiles 方案
 -- =============================================
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    avatar_url VARCHAR(500),
-    phone VARCHAR(20),
-    role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'banned')),
-    last_login TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+create table if not exists public.app_users (
+  id uuid primary key default extensions.gen_random_uuid(),
+  phone text unique not null,
+  password_hash text not null,
+  name text,
+  avatar_url text,
+  role text default 'user' check (role in ('user','admin')),
+  status text default 'active' check (status in ('active','inactive','banned')),
+  last_login timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
+create index if not exists idx_app_users_phone on public.app_users(phone);
+
+-- 更新时间触发器
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end; $$ language plpgsql;
+
+drop trigger if exists trg_app_users_updated on public.app_users;
+create trigger trg_app_users_updated before update on public.app_users
+for each row execute function public.set_updated_at();
+
 -- =============================================
--- 模板表 (templates)
+-- 模板与作品
 -- =============================================
-CREATE TABLE IF NOT EXISTS templates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(200) NOT NULL,
-    description TEXT,
-    category VARCHAR(50) NOT NULL,
-    cover_url VARCHAR(500) NOT NULL,
-    template_data JSONB NOT NULL,
-    price DECIMAL(10,2) DEFAULT 0.00,
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
-    download_count INTEGER DEFAULT 0,
-    usage_count INTEGER DEFAULT 0,
-    tags VARCHAR(500)[],
-    created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    CONSTRAINT valid_price CHECK (price >= 0)
+create table if not exists public.templates (
+  template_id text primary key,
+  scene_type text not null,
+  template_name text not null,
+  cover_color text default '#ffffff',
+  is_premium boolean default false,
+  price numeric default 0,
+  preview_url text,
+  template_data jsonb not null,
+  materials jsonb default '[]'::jsonb,
+  status text default 'active',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
--- =============================================
--- 用户作品表 (user_works)
--- =============================================
-CREATE TABLE IF NOT EXISTS user_works (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    template_id UUID REFERENCES templates(id),
-    title VARCHAR(200) NOT NULL,
-    work_data JSONB NOT NULL,
-    cover_url VARCHAR(500),
-    status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
-    download_count INTEGER DEFAULT 0,
-    tags VARCHAR(500)[],
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    INDEX idx_user_works_user_id (user_id),
-    INDEX idx_user_works_template_id (template_id)
+drop trigger if exists trg_templates_updated on public.templates;
+create trigger trg_templates_updated before update on public.templates
+for each row execute function public.set_updated_at();
+
+create table if not exists public.works (
+  work_id uuid primary key default extensions.gen_random_uuid(),
+  client_uid text not null,
+  user_id uuid references public.app_users(id) on delete set null,
+  work_name text,
+  scene_type text,
+  template_id text references public.templates(template_id) on delete set null,
+  work_data jsonb not null,
+  preview_url text,
+  is_private boolean default false,
+  status text default 'active',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
--- =============================================
--- 模板分类表 (template_categories)
--- =============================================
-CREATE TABLE IF NOT EXISTS template_categories (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(100) UNIQUE NOT NULL,
-    description TEXT,
-    icon_url VARCHAR(500),
-    sort_order INTEGER DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+drop trigger if exists trg_works_updated on public.works;
+create trigger trg_works_updated before update on public.works
+for each row execute function public.set_updated_at();
+
+create index if not exists idx_works_client on public.works(client_uid);
+create index if not exists idx_templates_scene on public.templates(scene_type);
 
 -- =============================================
--- 用户收藏表 (user_favorites)
+-- RLS 策略（原型期宽松，上线前请收紧）
 -- =============================================
-CREATE TABLE IF NOT EXISTS user_favorites (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    template_id UUID NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 唯一约束，防止重复收藏
-    UNIQUE(user_id, template_id),
-    
-    -- 添加索引
-    INDEX idx_user_favorites_user_id (user_id),
-    INDEX idx_user_favorites_template_id (template_id)
-);
+alter table public.templates enable row level security;
+alter table public.works enable row level security;
+alter table public.app_users enable row level security;
 
--- =============================================
--- 下载记录表 (download_records)
--- =============================================
-CREATE TABLE IF NOT EXISTS download_records (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    template_id UUID NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
-    download_type VARCHAR(20) DEFAULT 'template' CHECK (download_type IN ('template', 'work')),
-    file_format VARCHAR(20) DEFAULT 'png' CHECK (file_format IN ('png', 'jpg', 'pdf', 'svg')),
-    file_size INTEGER,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    INDEX idx_download_records_user_id (user_id),
-    INDEX idx_download_records_template_id (template_id)
-);
+-- 模板：任何人可读
+do $$ begin
+  create policy templates_select_all on public.templates for select using (true);
+exception when duplicate_object then null; end $$;
+
+-- 作品：允许匿名插入/读取（原型期）
+do $$ begin
+  create policy works_insert_all on public.works for insert with check (true);
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create policy works_select_all on public.works for select using (true);
+exception when duplicate_object then null; end $$;
+
+-- 用户表：默认不开放读取；仅允许注册函数写入
+do $$ begin
+  create policy app_users_block_select on public.app_users for select using (false);
+exception when duplicate_object then null; end $$;
 
 -- =============================================
--- 系统设置表 (system_settings)
--- =============================================
-CREATE TABLE IF NOT EXISTS system_settings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    setting_key VARCHAR(100) UNIQUE NOT NULL,
-    setting_value TEXT,
-    description TEXT,
-    setting_type VARCHAR(20) DEFAULT 'string' CHECK (setting_type IN ('string', 'number', 'boolean', 'json')),
-    is_public BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    INDEX idx_system_settings_key (setting_key)
-);
-
--- =============================================
--- 操作日志表 (operation_logs)
--- =============================================
-CREATE TABLE IF NOT EXISTS operation_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    operation_type VARCHAR(50) NOT NULL,
-    operation_target VARCHAR(100),
-    target_id UUID,
-    operation_data JSONB,
-    ip_address INET,
-    user_agent TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    INDEX idx_operation_logs_user_id (user_id),
-    INDEX idx_operation_logs_operation_type (operation_type),
-    INDEX idx_operation_logs_created_at (created_at)
-);
-
--- =============================================
--- 文件存储表 (file_storage)
--- =============================================
-CREATE TABLE IF NOT EXISTS file_storage (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    file_name VARCHAR(255) NOT NULL,
-    file_path VARCHAR(500) NOT NULL,
-    file_size INTEGER NOT NULL,
-    mime_type VARCHAR(100),
-    bucket_name VARCHAR(100) DEFAULT 'public',
-    uploaded_by UUID REFERENCES users(id),
-    is_public BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- 添加索引
-    INDEX idx_file_storage_file_path (file_path),
-    INDEX idx_file_storage_uploaded_by (uploaded_by)
-);
-
--- =============================================
--- 插入初始数据
+-- 安全函数：注册 / 登录（供 REST RPC 调用）
 -- =============================================
 
--- 插入默认模板分类
-INSERT INTO template_categories (name, description, sort_order) VALUES
-('商务海报', '适用于商务场景的海报模板', 1),
-('社交媒体', '适用于社交媒体的图片模板', 2),
-('活动推广', '活动宣传和推广模板', 3),
-('教育培训', '教育和培训相关模板', 4),
-('电商产品', '电商产品展示模板', 5)
-ON CONFLICT (name) DO NOTHING;
+-- 注册：写入哈希后的密码，返回精简用户信息
+create or replace function public.register_user(
+  p_phone text,
+  p_password text,
+  p_name text default null
+)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare v_user public.app_users;
+begin
+  if p_phone is null or length(trim(p_phone)) = 0 then
+    return json_build_object('success', false, 'message', '手机号不能为空');
+  end if;
+  if p_password is null or length(p_password) < 6 then
+    return json_build_object('success', false, 'message', '密码至少6位');
+  end if;
 
--- 插入默认系统设置
-INSERT INTO system_settings (setting_key, setting_value, description, setting_type, is_public) VALUES
-('site_name', '轻创图文', '网站名称', 'string', TRUE),
-('site_description', '专业在线图文设计平台', '网站描述', 'string', TRUE),
-('max_file_size', '10485760', '最大文件上传大小(字节)', 'number', FALSE),
-('allow_registration', 'true', '是否允许用户注册', 'boolean', FALSE),
-('default_user_role', 'user', '新用户默认角色', 'string', FALSE),
-('template_categories', '["商务海报","社交媒体","活动推广","教育培训","电商产品"]', '模板分类列表', 'json', TRUE)
-ON CONFLICT (setting_key) DO NOTHING;
+  insert into public.app_users(phone, password_hash, name)
+  values (trim(p_phone), extensions.crypt(p_password, extensions.gen_salt('bf')), nullif(trim(p_name),''))
+  returning * into v_user;
 
--- 插入默认管理员用户 (密码: admin123)
-INSERT INTO users (email, password_hash, name, role) VALUES
-('admin@lightcreate.com', crypt('admin123', gen_salt('bf')), '系统管理员', 'admin')
-ON CONFLICT (email) DO NOTHING;
+  return json_build_object(
+    'success', true,
+    'user', json_build_object(
+      'id', v_user.id,
+      'phone', v_user.phone,
+      'name', coalesce(v_user.name, ''),
+      'role', v_user.role,
+      'status', v_user.status
+    )
+  );
+exception when unique_violation then
+  return json_build_object('success', false, 'message', '该手机号已注册');
+end; $$;
 
--- =============================================
--- 创建触发器函数 (自动更新updated_at)
--- =============================================
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+revoke all on function public.register_user(text, text, text) from public;
+grant execute on function public.register_user(text, text, text) to anon, authenticated;
 
--- 为需要自动更新时间的表创建触发器
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_templates_updated_at BEFORE UPDATE ON templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_user_works_updated_at BEFORE UPDATE ON user_works FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_template_categories_updated_at BEFORE UPDATE ON template_categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_system_settings_updated_at BEFORE UPDATE ON system_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- 登录：校验密码，更新最后登录时间
+create or replace function public.login_user(
+  p_phone text,
+  p_password text
+)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare v_user public.app_users;
+begin
+  select * into v_user from public.app_users where phone = trim(p_phone) limit 1;
+  if not found then
+    return json_build_object('success', false, 'message', '用户不存在');
+  end if;
 
--- =============================================
--- 创建视图 (简化查询)
--- =============================================
+  if v_user.password_hash = extensions.crypt(p_password, v_user.password_hash) then
+    update public.app_users set last_login = now() where id = v_user.id;
+    return json_build_object(
+      'success', true,
+      'user', json_build_object(
+        'id', v_user.id,
+        'phone', v_user.phone,
+        'name', coalesce(v_user.name, ''),
+        'role', v_user.role,
+        'status', v_user.status
+      )
+    );
+  else
+    return json_build_object('success', false, 'message', '手机号或密码错误');
+  end if;
+end; $$;
 
--- 模板详情视图
-CREATE OR REPLACE VIEW template_details AS
-SELECT 
-    t.*,
-    u.name as creator_name,
-    c.name as category_name,
-    COUNT(f.id) as favorite_count
-FROM templates t
-LEFT JOIN users u ON t.created_by = u.id
-LEFT JOIN template_categories c ON t.category = c.name
-LEFT JOIN user_favorites f ON t.id = f.template_id
-GROUP BY t.id, u.name, c.name;
-
--- 用户统计视图
-CREATE OR REPLACE VIEW user_statistics AS
-SELECT 
-    u.id,
-    u.name,
-    u.email,
-    COUNT(DISTINCT w.id) as work_count,
-    COUNT(DISTINCT f.id) as favorite_count,
-    COUNT(DISTINCT d.id) as download_count,
-    u.last_login,
-    u.created_at
-FROM users u
-LEFT JOIN user_works w ON u.id = w.user_id
-LEFT JOIN user_favorites f ON u.id = f.user_id
-LEFT JOIN download_records d ON u.id = d.user_id
-GROUP BY u.id, u.name, u.email, u.last_login, u.created_at;
+revoke all on function public.login_user(text, text) from public;
+grant execute on function public.login_user(text, text) to anon, authenticated;
 
 -- =============================================
--- 创建索引 (优化查询性能)
+-- 最小示例数据（可多次执行）
 -- =============================================
+insert into public.templates (template_id, scene_type, template_name, cover_color, template_data)
+values
+  ('tpl_social_01','social','清新分享卡片','#EAF5FF', '{"size":{"w":1080,"h":1080},"backgroundColor":"#EAF5FF","elements":[{"id":"t1","type":"text","text":"今日好物分享","color":"#111","fontSize":72,"x":540,"y":160,"align":"center"},{"id":"r1","type":"rect","color":"#07c160","width":720,"height":4,"x":540,"y":230}] }'::jsonb),
+  ('tpl_ecomm_01','ecommerce','电商主图简洁','#FFF3E0', '{"size":{"w":800,"h":800},"backgroundColor":"#FFF3E0","elements":[{"id":"t2","type":"text","text":"本周特惠","color":"#E65100","fontSize":96,"x":400,"y":200,"align":"center"},{"id":"t3","type":"text","text":"限时9.9","color":"#111","fontSize":64,"x":400,"y":320,"align":"center"}] }'::jsonb)
+on conflict (template_id) do nothing;
 
--- 用户表索引
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
-CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
-
--- 模板表索引
-CREATE INDEX IF NOT EXISTS idx_templates_category ON templates(category);
-CREATE INDEX IF NOT EXISTS idx_templates_status ON templates(status);
-CREATE INDEX IF NOT EXISTS idx_templates_created_by ON templates(created_by);
-CREATE INDEX IF NOT EXISTS idx_templates_download_count ON templates(download_count DESC);
-CREATE INDEX IF NOT EXISTS idx_templates_created_at ON templates(created_at DESC);
-
--- 用户作品表索引
-CREATE INDEX IF NOT EXISTS idx_user_works_status ON user_works(status);
-CREATE INDEX IF NOT EXISTS idx_user_works_created_at ON user_works(created_at DESC);
-
--- 操作日志索引
-CREATE INDEX IF NOT EXISTS idx_operation_logs_target_id ON operation_logs(target_id);
-CREATE INDEX IF NOT EXISTS idx_operation_logs_created_at_desc ON operation_logs(created_at DESC);
-
--- =============================================
--- 创建Row Level Security (RLS) 策略
--- =============================================
-
--- 启用RLS
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_works ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_favorites ENABLE ROW LEVEL SECURITY;
-ALTER TABLE download_records ENABLE ROW LEVEL SECURITY;
-ALTER TABLE file_storage ENABLE ROW LEVEL SECURITY;
-
--- 用户表策略
-CREATE POLICY "用户只能查看自己的信息" ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "用户可以更新自己的信息" ON users FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "管理员可以管理所有用户" ON users FOR ALL USING (EXISTS (
-    SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'
-));
-
--- 模板表策略
-CREATE POLICY "任何人都可以查看激活的模板" ON templates FOR SELECT USING (status = 'active');
-CREATE POLICY "管理员可以管理所有模板" ON templates FOR ALL USING (EXISTS (
-    SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'
-));
-
--- 用户作品策略
-CREATE POLICY "用户可以查看和管理自己的作品" ON user_works FOR ALL USING (auth.uid() = user_id);
-CREATE POLICY "任何人都可以查看已发布的作品" ON user_works FOR SELECT USING (status = 'published');
-
--- =============================================
--- 创建Supabase认证触发器
--- =============================================
-
--- 当Supabase Auth创建新用户时，同步到users表
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO public.users (id, email, name)
-    VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'name');
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- 创建触发器（需要在Supabase仪表板中手动创建）
--- CREATE TRIGGER on_auth_user_created
---     AFTER INSERT ON auth.users
---     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
--- =============================================
--- 数据库完成提示
--- =============================================
-COMMENT ON DATABASE current_database IS 'LightCreateGraphic 轻创图文数据库 - 完成配置';
-
--- 输出完成信息
-DO $$
-BEGIN
-    RAISE NOTICE '✅ LightCreateGraphic 数据库配置完成！';
-    RAISE NOTICE '📊 已创建 % 个表', (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public');
-    RAISE NOTICE '👤 默认管理员账号: admin@lightcreate.com / admin123';
-    RAISE NOTICE '🚀 请将SQL文件导入Supabase项目即可使用';
-END $$;
+-- 可选：初始化一个管理员账号（请在控制台手动执行一次并修改手机号与密码）
+-- insert into public.app_users(phone, password_hash, name, role)
+-- values ('13800000000', crypt('admin123', gen_salt('bf')), '系统管理员', 'admin')
+-- on conflict (phone) do nothing;

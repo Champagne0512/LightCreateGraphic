@@ -33,8 +33,8 @@
           <text class="input-label">密码</text>
           <input 
             name="password" 
-            password 
-            placeholder="请输入密码" 
+            password="{{!showPassword}}" 
+            placeholder="请输入密码"
             maxlength="20"
             value="{{formData.password}}"
             bindinput="onPasswordInput"
@@ -90,3 +90,4 @@
     <view class="loading-spinner"></view>
   </view>
 </view>
+

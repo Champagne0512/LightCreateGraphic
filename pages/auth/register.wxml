@@ -27,29 +27,6 @@
         </view>
       </view>
 
-      <!-- 验证码输入 -->
-      <view class="form-group">
-        <view class="input-container captcha-container">
-          <text class="input-label">验证码</text>
-          <input 
-            name="captcha" 
-            type="number" 
-            placeholder="请输入验证码" 
-            maxlength="6"
-            value="{{formData.captcha}}"
-            bindinput="onCaptchaInput"
-            class="input-field captcha-input"
-          />
-          <button 
-            class="captcha-btn {{countdown > 0 ? 'disabled' : ''}}"
-            bindtap="sendCaptcha"
-            disabled="{{countdown > 0 || !formData.phone}}"
-          >
-            {{countdown > 0 ? countdown + 's' : '获取验证码'}}
-          </button>
-        </view>
-      </view>
-
       <!-- 密码输入 -->
       <view class="form-group">
         <view class="input-container">
@@ -102,7 +79,7 @@
       <button 
         formType="submit" 
         class="register-btn {{isLoading ? 'loading' : ''}}"
-        disabled="{{!formData.phone || !formData.captcha || !formData.password || !formData.confirmPassword || !formData.agreed || isLoading}}"
+        disabled="{{!formData.phone || !formData.password || !formData.confirmPassword || !formData.agreed || isLoading}}"
       >
         {{isLoading ? '注册中...' : '注册'}}
       </button>
@@ -120,3 +97,4 @@
     <view class="loading-spinner"></view>
   </view>
 </view>
+

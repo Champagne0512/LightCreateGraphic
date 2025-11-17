@@ -1,5 +1,18 @@
 const KEY = 'LCG_WORK_DRAFTS';
 
+// 通用存取（登录模块也会用到）
+function setStorage(key, value) {
+  try {
+    if (value === null || value === undefined) wx.removeStorageSync(key);
+    else wx.setStorageSync(key, value);
+  } catch (e) {}
+}
+
+function getStorage(key) {
+  try { return wx.getStorageSync(key); } catch (e) { return null; }
+}
+
+// 草稿存取（兼容原有功能）
 function loadDrafts() {
   try {
     return wx.getStorageSync(KEY) || [];
@@ -19,4 +32,4 @@ function getDraftById(id) {
   return loadDrafts().find(d => d.id === id);
 }
 
-module.exports = { loadDrafts, saveDraft, getDraftById };
+module.exports = { setStorage, getStorage, loadDrafts, saveDraft, getDraftById };

@@ -81,7 +81,7 @@ function showSuccess(message) {
   });
 }
 
-// 显示加载中
+// 显示加载框
 function showLoading(message = '加载中...') {
   wx.showLoading({
     title: message,
@@ -89,7 +89,7 @@ function showLoading(message = '加载中...') {
   });
 }
 
-// 隐藏加载中
+// 隐藏加载框
 function hideLoading() {
   wx.hideLoading();
 }
@@ -107,3 +107,4 @@ module.exports = {
   showLoading,
   hideLoading
 };
+
