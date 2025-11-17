@@ -1,0 +1,68 @@
+<view class="users">
+  <!-- 搜索和筛选 -->
+  <view class="search-bar">
+    <input 
+      class="search-input" 
+      placeholder="搜索用户名或邮箱" 
+      bindinput="onSearchInput"
+      value="{{searchKeyword}}"
+    />
+    <picker class="filter-picker" range="{{filterOptions}}" value="{{filterIndex}}" bindchange="onFilterChange">
+      <view class="picker-value">{{filterOptions[filterIndex]}}</view>
+    </picker>
+  </view>
+
+  <!-- 用户列表 -->
+  <view class="user-list">
+    <view class="user-item" wx:for="{{userList}}" wx:key="id">
+      <image class="user-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="user-name">{{item.name}}</text>
+        <text class="user-email">{{item.email}}</text>
+        <text class="user-register-time">注册时间: {{item.registerTime}}</text>
+        <text class="user-status {{item.status === 'active' ? 'active' : 'inactive'}}">
+          {{item.status === 'active' ? '正常' : '禁用'}}
+        </text>
+      </view>
+      <view class="user-actions">
+        <button class="action-btn view" bindtap="viewUserDetail" data-id="{{item.id}}">查看</button>
+        <button class="action-btn {{item.status === 'active' ? 'disable' : 'enable'}}" 
+                bindtap="toggleUserStatus" data-id="{{item.id}}" data-status="{{item.status}}">
+          {{item.status === 'active' ? '禁用' : '启用'}}
+        </button>
+        <button class="action-btn delete" bindtap="deleteUser" data-id="{{item.id}}">删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{userList.length === 0}}">
+    <image src="/images/admin/empty-user.png" class="empty-icon"></image>
+    <text class="empty-text">暂无用户数据</text>
+  </view>
+
+  <!-- 用户详情弹窗 -->
+  <view class="modal" wx:if="{{showUserModal}}">
+    <view class="modal-content">
+      <text class="modal-title">用户详情</text>
+      
+      <view class="user-detail">
+        <image class="detail-avatar" src="{{selectedUser.avatar || '/images/default-avatar.png'}}"></image>
+        <view class="detail-info">
+          <text class="detail-name">{{selectedUser.name}}</text>
+          <text class="detail-email">{{selectedUser.email}}</text>
+          <text class="detail-register">注册时间: {{selectedUser.registerTime}}</text>
+          <text class="detail-status {{selectedUser.status === 'active' ? 'active' : 'inactive'}}">
+            状态: {{selectedUser.status === 'active' ? '正常' : '禁用'}}
+          </text>
+          <text class="detail-template-count">使用模板数量: {{selectedUser.templateCount}}</text>
+          <text class="detail-last-login">最后登录: {{selectedUser.lastLogin}}</text>
+        </view>
+      </view>
+
+      <view class="form-actions">
+        <button class="btn close" bindtap="hideUserModal">关闭</button>
+      </view>
+    </view>
+  </view>
+</view>

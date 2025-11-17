@@ -1,0 +1,100 @@
+<view class="register-container">
+  <!-- 头部区域 -->
+  <view class="header">
+    <view class="logo">
+      <text class="logo-text">轻创图文</text>
+      <text class="logo-subtitle">LightCreate Graphic</text>
+    </view>
+    <text class="welcome-text">创建您的账户</text>
+  </view>
+
+  <!-- 注册表单 -->
+  <view class="form-container">
+    <form bindsubmit="handleRegister">
+      <!-- 手机号输入 -->
+      <view class="form-group">
+        <view class="input-container">
+          <text class="input-label">手机号</text>
+          <input 
+            name="phone" 
+            type="number" 
+            placeholder="请输入手机号" 
+            maxlength="11"
+            value="{{formData.phone}}"
+            bindinput="onPhoneInput"
+            class="input-field"
+          />
+        </view>
+      </view>
+
+      <!-- 密码输入 -->
+      <view class="form-group">
+        <view class="input-container">
+          <text class="input-label">密码</text>
+          <input 
+            name="password" 
+            password 
+            placeholder="请输入密码（6-20位）" 
+            maxlength="20"
+            value="{{formData.password}}"
+            bindinput="onPasswordInput"
+            class="input-field"
+          />
+          <view class="password-toggle" bindtap="togglePasswordVisibility">
+            <text class="toggle-text">{{showPassword ? '隐藏' : '显示'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 确认密码 -->
+      <view class="form-group">
+        <view class="input-container">
+          <text class="input-label">确认密码</text>
+          <input 
+            name="confirmPassword" 
+            password 
+            placeholder="请再次输入密码" 
+            maxlength="20"
+            value="{{formData.confirmPassword}}"
+            bindinput="onConfirmPasswordInput"
+            class="input-field"
+          />
+        </view>
+      </view>
+
+      <!-- 用户协议 -->
+      <view class="agreement">
+        <checkbox-group bindchange="onAgreementChange">
+          <label class="agreement-label">
+            <checkbox value="agreement" checked="{{formData.agreed}}" />
+            <text class="agreement-text">我已阅读并同意</text>
+            <text class="agreement-link" bindtap="showUserAgreement">《用户协议》</text>
+            <text class="agreement-text">和</text>
+            <text class="agreement-link" bindtap="showPrivacyPolicy">《隐私政策》</text>
+          </label>
+        </checkbox-group>
+      </view>
+
+      <!-- 注册按钮 -->
+      <button 
+        formType="submit" 
+        class="register-btn {{isLoading ? 'loading' : ''}}"
+        disabled="{{!formData.phone || !formData.password || !formData.confirmPassword || !formData.agreed || isLoading}}"
+      >
+        {{isLoading ? '注册中...' : '注册'}}
+      </button>
+    </form>
+
+    <!-- 登录链接 -->
+    <view class="login-link">
+      <text>已有账号？</text>
+      <text class="login-text" bindtap="navigateToLogin">立即登录</text>
+    </view>
+  </view>
+
+  <!-- 加载遮罩 -->
+  <view wx:if="{{isLoading}}" class="loading-mask">
+    <view class="loading-spinner"></view>
+  </view>
+</view>
+

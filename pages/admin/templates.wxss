@@ -1,0 +1,219 @@
+.templates {
+  padding: 20rpx;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+  gap: 20rpx;
+}
+
+.search-input {
+  flex: 1;
+  height: 80rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+}
+
+.add-btn {
+  background: #1677FF;
+  color: white;
+  border: none;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
+  height: 80rpx;
+  font-size: 28rpx;
+}
+
+.template-list {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.template-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.template-cover {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+  margin-right: 20rpx;
+}
+
+.template-info {
+  flex: 1;
+}
+
+.template-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.template-category {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+.template-stats {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.template-status {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.template-status.active {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.template-status.inactive {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.template-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.action-btn {
+  padding: 12rpx 20rpx;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  min-width: 80rpx;
+}
+
+.action-btn.edit {
+  background: #1890ff;
+  color: white;
+}
+
+.action-btn.enable {
+  background: #52c41a;
+  color: white;
+}
+
+.action-btn.disable {
+  background: #faad14;
+  color: white;
+}
+
+.action-btn.delete {
+  background: #ff4d4f;
+  color: white;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100rpx 0;
+}
+
+.empty-icon {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  width: 80%;
+  border-radius: 16rpx;
+  padding: 40rpx;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 30rpx;
+}
+
+.label {
+  display: block;
+  font-size: 28rpx;
+  margin-bottom: 10rpx;
+  color: #333;
+}
+
+.input {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+}
+
+.picker {
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+}
+
+.form-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+
+.btn {
+  flex: 1;
+  height: 80rpx;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+}
+
+.btn.cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.btn.confirm {
+  background: #1677FF;
+  color: white;
+}

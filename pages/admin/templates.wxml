@@ -1,0 +1,70 @@
+<view class="templates">
+  <!-- 搜索和筛选 -->
+  <view class="search-bar">
+    <input 
+      class="search-input" 
+      placeholder="搜索模板名称" 
+      bindinput="onSearchInput"
+      value="{{searchKeyword}}"
+    />
+    <button class="add-btn" bindtap="showAddTemplate">添加模板</button>
+  </view>
+
+  <!-- 模板列表 -->
+  <view class="template-list">
+    <view class="template-item" wx:for="{{templateList}}" wx:key="id">
+      <image class="template-cover" src="{{item.coverUrl}}" mode="aspectFill"></image>
+      <view class="template-info">
+        <text class="template-name">{{item.name}}</text>
+        <text class="template-category">{{item.category}}</text>
+        <text class="template-stats">下载: {{item.downloadCount}} | 使用: {{item.usageCount}}</text>
+        <text class="template-status {{item.status === 'active' ? 'active' : 'inactive'}}">
+          {{item.status === 'active' ? '已启用' : '已禁用'}}
+        </text>
+      </view>
+      <view class="template-actions">
+        <button class="action-btn edit" bindtap="editTemplate" data-id="{{item.id}}">编辑</button>
+        <button class="action-btn {{item.status === 'active' ? 'disable' : 'enable'}}" 
+                bindtap="toggleTemplateStatus" data-id="{{item.id}}" data-status="{{item.status}}">
+          {{item.status === 'active' ? '禁用' : '启用'}}
+        </button>
+        <button class="action-btn delete" bindtap="deleteTemplate" data-id="{{item.id}}">删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{templateList.length === 0}}">
+    <image src="/images/admin/empty-template.png" class="empty-icon"></image>
+    <text class="empty-text">暂无模板数据</text>
+  </view>
+
+  <!-- 添加/编辑模板弹窗 -->
+  <view class="modal" wx:if="{{showTemplateModal}}">
+    <view class="modal-content">
+      <text class="modal-title">{{editingTemplate ? '编辑模板' : '添加模板'}}</text>
+      
+      <view class="form-group">
+        <text class="label">模板名称</text>
+        <input class="input" value="{{templateForm.name}}" bindinput="onFormInput" data-field="name" />
+      </view>
+
+      <view class="form-group">
+        <text class="label">分类</text>
+        <picker class="picker" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <view class="picker-value">{{templateForm.category || '请选择分类'}}</view>
+        </picker>
+      </view>
+
+      <view class="form-group">
+        <text class="label">封面图URL</text>
+        <input class="input" value="{{templateForm.coverUrl}}" bindinput="onFormInput" data-field="coverUrl" />
+      </view>
+
+      <view class="form-actions">
+        <button class="btn cancel" bindtap="hideTemplateModal">取消</button>
+        <button class="btn confirm" bindtap="saveTemplate">保存</button>
+      </view>
+    </view>
+  </view>
+</view>
