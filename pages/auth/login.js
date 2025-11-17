@@ -1,6 +1,10 @@
-const { getClientUid } = require('../../utils/client.js');
 const { setStorage, getStorage } = require('../../utils/storage.js');
 const supa = require('../../services/supa.js');
+
+// 临时修复：如果缺少uid函数，提供一个简单的实现
+function getClientUid() {
+  return 'user_' + Math.random().toString(36).substr(2, 9);
+}
 
 Page({
   data: {

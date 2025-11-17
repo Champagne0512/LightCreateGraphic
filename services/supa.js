@@ -95,9 +95,9 @@ class SupabaseService {
     if (!this.enabled()) return this.getMockTemplates(category);
     try {
       const where = [`status=eq.active`];
-      const select = 'template_id,scene_type,template_name,cover_color,template_data,created_at';
+      const select = 'template_id,scene_type,template_name,cover_color,template_data';
       if (category) where.push(`scene_type=eq.${encodeURIComponent(category)}`);
-      const query = `?select=${encodeURIComponent(select)}&${where.join('&')}&order=created_at.desc&limit=50`;
+      const query = `?select=${encodeURIComponent(select)}&${where.join('&')}&limit=50`;
       const data = await this.wxRest(`/rest/v1/templates${query}`);
       return Array.isArray(data) ? data : [];
     } catch (e) {
