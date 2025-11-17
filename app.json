@@ -1,32 +1,41 @@
 {
   "pages": [
+    "pages/auth/login",
+    "pages/auth/register",
     "pages/index/index",
     "pages/templates/list",
     "pages/editor/index",
     "pages/export/index",
     "pages/onboarding/index",
-    "pages/profile/index"
+    "pages/profile/index",
+    "pages/admin/dashboard",
+    "pages/admin/templates",
+    "pages/admin/users"
   ],
   "window": {
     "navigationBarTitleText": "轻创图文",
-    "navigationBarBackgroundColor": "#ffffff",
-    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#1677FF",
+    "navigationBarTextStyle": "white",
     "backgroundColor": "#f7f8fa",
     "backgroundTextStyle": "dark"
   },
   "tabBar": {
     "color": "#666",
-    "selectedColor": "#07c160",
+    "selectedColor": "#1677FF",
     "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "创作"
+        "text": "创作",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
       },
       {
         "pagePath": "pages/profile/index",
-        "text": "我的"
+        "text": "我的",
+        "iconPath": "images/tab-profile.png",
+        "selectedIconPath": "images/tab-profile-active.png"
       }
     ]
   },

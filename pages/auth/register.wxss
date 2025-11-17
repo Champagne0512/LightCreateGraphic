@@ -1,0 +1,209 @@
+/* 注册页面样式 */
+.register-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1677FF 0%, #36CFC9 100%);
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 头部区域 */
+.header {
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+
+.logo {
+  margin-bottom: 30rpx;
+}
+
+.logo-text {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.logo-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+}
+
+.welcome-text {
+  font-size: 36rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* 表单容器 */
+.form-container {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 60rpx 40rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 表单组 */
+.form-group {
+  margin-bottom: 40rpx;
+}
+
+.input-container {
+  position: relative;
+}
+
+.input-label {
+  display: block;
+  font-size: 28rpx;
+  color: #333333;
+  margin-bottom: 20rpx;
+  font-weight: 500;
+}
+
+.input-field {
+  width: 100%;
+  height: 90rpx;
+  border: 2rpx solid #e8e8e8;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  background: #fafafa;
+  transition: all 0.3s;
+}
+
+.input-field:focus {
+  border-color: #1677FF;
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(22, 119, 255, 0.1);
+}
+
+/* 验证码区域 */
+.captcha-container {
+  display: flex;
+  align-items: center;
+}
+
+.captcha-input {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.captcha-btn {
+  width: 200rpx;
+  height: 90rpx;
+  background: #1677FF;
+  color: #ffffff;
+  border: none;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  white-space: nowrap;
+}
+
+.captcha-btn.disabled {
+  background: #cccccc;
+  color: #999999;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 30rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #f0f0f0;
+  padding: 10rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 用户协议 */
+.agreement {
+  margin-bottom: 40rpx;
+}
+
+.agreement-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.agreement-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.agreement-link {
+  font-size: 26rpx;
+  color: #1677FF;
+}
+
+/* 注册按钮 */
+.register-btn {
+  width: 100%;
+  height: 90rpx;
+  background: #1677FF;
+  color: #ffffff;
+  border: none;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.register-btn:active {
+  background: #0e5fd9;
+  transform: scale(0.98);
+}
+
+.register-btn.loading {
+  background: #a0c5ff;
+}
+
+.register-btn[disabled] {
+  background: #cccccc;
+  color: #999999;
+}
+
+/* 登录链接 */
+.login-link {
+  text-align: center;
+  font-size: 26rpx;
+  color: #666;
+  margin-top: 30rpx;
+}
+
+.login-text {
+  color: #1677FF;
+  margin-left: 10rpx;
+  font-weight: 500;
+}
+
+/* 加载遮罩 */
+.loading-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 6rpx solid #ffffff;
+  border-top: 6rpx solid #1677FF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,51 @@
+<view class="dashboard">
+  <!-- 顶部统计卡片 -->
+  <view class="stats-cards">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.totalUsers}}</text>
+      <text class="stat-label">总用户数</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.totalTemplates}}</text>
+      <text class="stat-label">模板数量</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.todayVisits}}</text>
+      <text class="stat-label">今日访问</text>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions">
+    <text class="section-title">快捷操作</text>
+    <view class="action-grid">
+      <view class="action-item" bindtap="navigateToTemplates">
+        <image src="/images/admin/template.png" class="action-icon"></image>
+        <text>模板管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateToUsers">
+        <image src="/images/admin/user.png" class="action-icon"></image>
+        <text>用户管理</text>
+      </view>
+      <view class="action-item" bindtap="navigateToAnalytics">
+        <image src="/images/admin/analytics.png" class="action-icon"></image>
+        <text>数据统计</text>
+      </view>
+      <view class="action-item" bindtap="navigateToSettings">
+        <image src="/images/admin/settings.png" class="action-icon"></image>
+        <text>系统设置</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近活动 -->
+  <view class="recent-activities">
+    <text class="section-title">最近活动</text>
+    <view class="activity-list">
+      <view class="activity-item" wx:for="{{recentActivities}}" wx:key="id">
+        <text class="activity-time">{{item.time}}</text>
+        <text class="activity-content">{{item.content}}</text>
+      </view>
+    </view>
+  </view>
+</view>
