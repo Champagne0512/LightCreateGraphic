@@ -72,6 +72,12 @@
       <text class="divider-text">或使用其他方式登录</text>
     </view>
 
+    <!-- 游客登录 -->
+    <button class="guest-login-btn" bindtap="handleGuestLogin">
+      <image src="/images/guest-icon.png" class="guest-icon" />
+      <text>游客体验</text>
+    </button>
+
     <!-- 微信登录 -->
     <button class="wechat-login-btn" bindtap="handleWechatLogin">
       <image src="/images/wechat-icon.png" class="wechat-icon" />

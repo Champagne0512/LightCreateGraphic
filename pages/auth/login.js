@@ -151,6 +151,33 @@ Page({
     app.globalData.isAdmin = userInfo.role === 'admin';
   },
 
+  // 游客登录
+  handleGuestLogin() {
+    this.setData({ isLoading: true });
+    
+    try {
+      const guestUserInfo = {
+        userId: 'guest_' + Math.random().toString(36).substr(2, 9),
+        phone: '',
+        nickname: '游客用户',
+        role: 'guest',
+        avatar: '/images/default-avatar.png',
+        memberStatus: false,
+        createTime: new Date().toISOString(),
+        isGuest: true
+      };
+      
+      this.saveLoginState(guestUserInfo, false);
+      wx.showToast({ title: '游客模式登录成功', icon: 'success', duration: 2000 });
+      setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }); }, 1500);
+    } catch (error) {
+      console.error('游客登录失败:', error);
+      wx.showToast({ title: '游客登录失败，请重试', icon: 'none', duration: 3000 });
+    } finally {
+      this.setData({ isLoading: false });
+    }
+  },
+
   // 微信登录
   handleWechatLogin() {
     wx.showToast({ title: '微信登录功能开发中', icon: 'none', duration: 2000 });
