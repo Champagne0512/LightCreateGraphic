@@ -1,0 +1,9 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "草稿管理",
+  "navigationBarBackgroundColor": "#8B5CF6",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F8FAFC",
+  "backgroundTextStyle": "dark"
+}

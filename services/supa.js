@@ -378,6 +378,48 @@ class SupabaseService {
     if (filter.role) return users.filter(u => u.role === filter.role);
     return users;
   }
+
+  // ===== Drafts & Versions =====
+  async upsertDraft({ draftId = null, userId = null, clientUid = null, name, size, workData, note = '' }) {
+    if (!this.enabled()) return { success: false, message: 'Supabase disabled' };
+    try {
+      const res = await this.wxRpc('upsert_draft', {
+        p_draft_id: draftId,
+        p_user_id: userId,
+        p_client_uid: clientUid,
+        p_name: name,
+        p_size: size,
+        p_work_data: workData,
+        p_note: note
+      });
+      return res;
+    } catch (e) { return { success: false, message: e.message || 'upsert draft failed' }; }
+  }
+
+  async listDrafts(userId = null, clientUid = null) {
+    if (!this.enabled()) return { success: true, items: [] };
+    try { return await this.wxRpc('list_drafts', { p_user_id: userId, p_client_uid: clientUid }); } catch (e) { return { success: false, items: [] }; }
+  }
+
+  async getDraft(draftId) {
+    if (!this.enabled()) return { success: false };
+    try { return await this.wxRpc('get_draft', { p_draft_id: draftId }); } catch (e) { return { success: false }; }
+  }
+
+  async listDraftVersions(draftId) {
+    if (!this.enabled()) return { success: true, versions: [] };
+    try { return await this.wxRpc('list_draft_versions', { p_draft_id: draftId }); } catch (e) { return { success: false, versions: [] }; }
+  }
+
+  async deleteDraft(draftId) {
+    if (!this.enabled()) return { success: true };
+    try { return await this.wxRpc('delete_draft', { p_draft_id: draftId }); } catch (e) { return { success: false }; }
+  }
+
+  async restoreDraftVersion(draftId, versionNo, note = null) {
+    if (!this.enabled()) return { success: false };
+    try { return await this.wxRpc('restore_draft_version', { p_draft_id: draftId, p_version_no: versionNo, p_note: note }); } catch (e) { return { success: false }; }
+  }
 }
 
 // Singleton export
@@ -409,5 +451,12 @@ module.exports = {
   getPrivacySettings: (userId) => supabaseService.getPrivacySettings(userId),
   updatePrivacySettings: (userId, settings) => supabaseService.updatePrivacySettings(userId, settings),
   getUserExtendedStats: (userId, timeRange) => supabaseService.getUserExtendedStats(userId, timeRange),
-  getStatisticsChartData: (userId, timeRange) => supabaseService.getStatisticsChartData(userId, timeRange)
+  getStatisticsChartData: (userId, timeRange) => supabaseService.getStatisticsChartData(userId, timeRange),
+  // drafts
+  upsertDraft: (payload) => supabaseService.upsertDraft(payload),
+  listDrafts: (userId, clientUid) => supabaseService.listDrafts(userId, clientUid),
+  getDraft: (draftId) => supabaseService.getDraft(draftId),
+  listDraftVersions: (draftId) => supabaseService.listDraftVersions(draftId),
+  deleteDraft: (draftId) => supabaseService.deleteDraft(draftId),
+  restoreDraftVersion: (draftId, versionNo, note) => supabaseService.restoreDraftVersion(draftId, versionNo, note)
 };

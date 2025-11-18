@@ -1,0 +1,220 @@
+<!-- 草稿管理页面 - 现代化设计风格 -->
+<view class="drafts-container">
+  
+  <!-- 顶部搜索栏 -->
+  <view class="search-bar">
+    <view class="search-box">
+      <input 
+        class="search-input" 
+        placeholder="搜索草稿..." 
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+      />
+      <view class="search-icon">🔍</view>
+      <view wx:if="{{searchKeyword}}" class="clear-btn" bindtap="clearSearch">
+        <text>×</text>
+      </view>
+    </view>
+    
+    <!-- 筛选和排序 -->
+    <view class="filter-sort-bar">
+      <!-- 筛选按钮组 -->
+      <view class="filter-group">
+        <view 
+          class="filter-btn {{filter === 'all' ? 'active' : ''}}"
+          data-filter="all"
+          bindtap="onFilterChange"
+        >
+          全部
+        </view>
+        <view 
+          class="filter-btn {{filter === 'local' ? 'active' : ''}}"
+          data-filter="local"
+          bindtap="onFilterChange"
+        >
+          本地
+        </view>
+        <view 
+          class="filter-btn {{filter === 'cloud' ? 'active' : ''}}"
+          data-filter="cloud"
+          bindtap="onFilterChange"
+        >
+          云端
+        </view>
+      </view>
+      
+      <!-- 排序按钮 -->
+      <view class="sort-btn" bindtap="showSortMenu">
+        <text>{{getSortText()}}</text>
+        <text class="sort-arrow">▼</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 内容区域 -->
+  <view class="content-area">
+    
+    <!-- 编辑模式工具栏 -->
+    <view wx:if="{{editMode}}" class="edit-toolbar">
+      <view class="selected-count">
+        已选择 {{selectedDrafts.length}} 个草稿
+      </view>
+      <view class="edit-actions">
+        <view class="edit-btn delete" bindtap="batchDelete">
+          <text>删除</text>
+        </view>
+        <view class="edit-btn upload" bindtap="batchUploadToCloud">
+          <text>上传到云端</text>
+        </view>
+        <view class="edit-btn cancel" bindtap="toggleEditMode">
+          <text>取消</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="loading-state">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{isEmpty}}" class="empty-state">
+      <view class="empty-icon">📁</view>
+      <text class="empty-title">暂无草稿</text>
+      <text class="empty-desc">开始创作第一个作品吧</text>
+      <view class="empty-action" bindtap="goToEditor">
+        <text>新建草稿</text>
+      </view>
+    </view>
+
+    <!-- 草稿列表 -->
+    <view wx:else class="drafts-grid">
+      <block wx:for="{{drafts}}" wx:key="id">
+        <view 
+          class="draft-card {{selectedDrafts.indexOf(item.id) > -1 ? 'selected' : ''}}"
+          bindtap="{{editMode ? 'toggleSelectDraft' : 'openDraft'}}"
+          bindlongpress="onDraftLongPress"
+          data-id="{{item.id}}"
+        >
+          
+          <!-- 选择框 -->
+          <view wx:if="{{editMode}}" class="select-checkbox">
+            <view class="checkbox {{selectedDrafts.indexOf(item.id) > -1 ? 'checked' : ''}}">
+              <text wx:if="{{selectedDrafts.indexOf(item.id) > -1}}">✓</text>
+            </view>
+          </view>
+          
+          <!-- 草稿缩略图 -->
+          <view class="draft-thumbnail">
+            <view class="thumbnail-content">
+              <text class="draft-icon">{{getDraftIcon(item)}}</text>
+            </view>
+            
+            <!-- 云端标识 -->
+            <view wx:if="{{item.source === 'cloud'}}" class="cloud-badge">
+              <text>☁️</text>
+            </view>
+            
+            <!-- 草稿状态 -->
+            <view class="draft-status">
+              <text class="status-badge {{getStatusClass(item)}}">
+                {{getStatusText(item)}}
+              </text>
+            </view>
+          </view>
+
+          <!-- 草稿信息 -->
+          <view class="draft-info">
+            <view class="draft-name">{{item.name || item.id}}</view>
+            <view class="draft-meta">
+              <text class="meta-item">{{formatTime(item.updatedAt || item.modifiedAt)}}</text>
+              <text wx:if="{{item.size}}" class="meta-item">{{formatSize(item.size)}}</text>
+            </view>
+            <view wx:if="{{item.note}}" class="draft-note">{{item.note}}</view>
+          </view>
+
+          <!-- 操作按钮 -->
+          <view wx:if="{{!editMode}}" class="draft-actions">
+            <view class="action-btn more" bindtap="showActionMenu" data-id="{{item.id}}">
+              <text>⋮</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 底部工具栏 -->
+  <view class="bottom-toolbar">
+    <view class="toolbar-content">
+      <view class="toolbar-left">
+        <view class="stats-info">
+          <text>共 {{drafts.length}} 个草稿</text>
+        </view>
+      </view>
+      
+      <view class="toolbar-right">
+        <view class="toolbar-btn edit-mode" bindtap="toggleEditMode">
+          <text>{{editMode ? '完成' : '选择'}}</text>
+        </view>
+        <view class="toolbar-btn new-draft" bindtap="goToEditor">
+          <text>新建</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>
+
+<!-- 排序菜单 -->
+<view wx:if="{{showSortMenu}}" class="sort-menu-overlay" bindtap="hideSortMenu">
+  <view class="sort-menu" catchtap="">
+    <view class="menu-header">
+      <text>排序方式</text>
+    </view>
+    <view class="menu-options">
+      <view 
+        class="menu-item {{sortBy === 'modified' && sortOrder === 'desc' ? 'active' : ''}}"
+        data-sort-by="modified"
+        data-sort-order="desc"
+        bindtap="onSortChange"
+      >
+        <text>最近修改 ↓</text>
+      </view>
+      <view 
+        class="menu-item {{sortBy === 'modified' && sortOrder === 'asc' ? 'active' : ''}}"
+        data-sort-by="modified"
+        data-sort-order="asc"
+        bindtap="onSortChange"
+      >
+        <text>最近修改 ↑</text>
+      </view>
+      <view 
+        class="menu-item {{sortBy === 'name' ? 'active' : ''}}"
+        data-sort-by="name"
+        data-sort-order="asc"
+        bindtap="onSortChange"
+      >
+        <text>名称排序</text>
+      </view>
+      <view 
+        class="menu-item {{sortBy === 'created' ? 'active' : ''}}"
+        data-sort-by="created"
+        data-sort-order="desc"
+        bindtap="onSortChange"
+      >
+        <text>创建时间</text>
+      </view>
+      <view 
+        class="menu-item {{sortBy === 'size' ? 'active' : ''}}"
+        data-sort-by="size"
+        data-sort-order="desc"
+        bindtap="onSortChange"
+      >
+        <text>文件大小</text>
+      </view>
+    </view>
+  </view>
+</view>
