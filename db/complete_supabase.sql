@@ -1,227 +1,200 @@
--- =============================================
--- LightCreateGraphic 轻创图文 - Supabase 完整数据库脚本
--- 适配 Supabase SQL Editor，可多次安全执行
--- 日期：2025-11-17
--- =============================================
+-- LightCreate Graphic – Complete Supabase schema and RPCs
+-- Run in Supabase SQL editor. Development-safe defaults (open RLS); tighten before production.
 
--- 扩展
-create extension if not exists pgcrypto with schema extensions;   -- 提供 gen_random_uuid / crypt / gen_salt
-create extension if not exists pgjwt with schema extensions;      -- 可选：如需自签 JWT 可启用（非必须）
+-- 0) Extensions
+create extension if not exists pgcrypto with schema extensions;
 
--- =============================================
--- 用户表（自管，适配小程序手机号+密码登录原型）
--- 说明：如使用 Supabase Auth，请改为使用 auth.users + profiles 方案
--- =============================================
-create table if not exists public.app_users (
+-- 1) Auth users (custom phone auth)
+create table if not exists public.auth_users (
   id uuid primary key default extensions.gen_random_uuid(),
   phone text unique not null,
   password_hash text not null,
   name text,
+  role text not null default 'user',
+  status text not null default 'active',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- 2) Profiles
+create table if not exists public.profiles (
+  user_id uuid primary key references public.auth_users(id) on delete cascade,
   nickname text,
   avatar_url text,
+  banner_url text,
   bio text,
   location text,
   website text,
-  banner_url text,
-  settings jsonb default '{}'::jsonb,
   member_status boolean default false,
-  member_expire_time timestamptz,
-  role text default 'user' check (role in ('user','admin')),
-  status text default 'active' check (status in ('active','inactive','banned')),
-  last_login timestamptz,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  member_expire date,
+  security_level text default 'standard',
+  two_factor_enabled boolean default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
-create index if not exists idx_app_users_phone on public.app_users(phone);
+-- 3) Privacy settings
+create table if not exists public.privacy_settings (
+  user_id uuid primary key references public.auth_users(id) on delete cascade,
+  profile_visible boolean default true,
+  works_visible boolean default true,
+  show_online_status boolean default true,
+  data_collection boolean default true,
+  marketing_emails boolean default false,
+  personalized_ads boolean default false,
+  updated_at timestamptz not null default now()
+);
 
--- 更新时间触发器
+-- 4) Notifications
+create table if not exists public.notifications (
+  id bigserial primary key,
+  user_id uuid not null references public.auth_users(id) on delete cascade,
+  type text default 'system',
+  title text not null,
+  content text not null,
+  created_at timestamptz not null default now(),
+  is_read boolean not null default false
+);
+create index if not exists idx_notifications_user on public.notifications(user_id, is_read, created_at desc);
+
+-- 5) Works (if minimal schema exists, ensure columns)
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='user_id') then
+    alter table public.works add column user_id uuid;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='work_name') then
+    alter table public.works add column work_name text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='preview_url') then
+    alter table public.works add column preview_url text;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='is_private') then
+    alter table public.works add column is_private boolean default false;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='created_at') then
+    alter table public.works add column created_at timestamptz not null default now();
+  end if;
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='updated_at') then
+    alter table public.works add column updated_at timestamptz not null default now();
+  end if;
+end $$;
+create index if not exists idx_works_user on public.works(user_id, created_at desc);
+
+-- 6) Favorites
+create table if not exists public.favorites (
+  id bigserial primary key,
+  user_id uuid not null references public.auth_users(id) on delete cascade,
+  work_id uuid references public.works(work_id) on delete cascade,
+  template_id text references public.templates(template_id) on delete cascade,
+  created_at timestamptz not null default now(),
+  constraint one_target check ((work_id is not null) <> (template_id is not null))
+);
+create unique index if not exists ux_fav_user_work on public.favorites(user_id, work_id) where work_id is not null;
+create unique index if not exists ux_fav_user_tpl on public.favorites(user_id, template_id) where template_id is not null;
+
+-- 7) Updated-at trigger
 create or replace function public.set_updated_at()
 returns trigger as $$
 begin
   new.updated_at = now();
   return new;
-end; $$ language plpgsql;
-
-drop trigger if exists trg_app_users_updated on public.app_users;
-create trigger trg_app_users_updated before update on public.app_users
-for each row execute function public.set_updated_at();
-
--- =============================================
--- 模板与作品
--- =============================================
-create table if not exists public.templates (
-  template_id text primary key,
-  scene_type text not null,
-  template_name text not null,
-  cover_color text default '#ffffff',
-  is_premium boolean default false,
-  price numeric default 0,
-  preview_url text,
-  template_data jsonb not null,
-  materials jsonb default '[]'::jsonb,
-  status text default 'active',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
-drop trigger if exists trg_templates_updated on public.templates;
-create trigger trg_templates_updated before update on public.templates
-for each row execute function public.set_updated_at();
-
-create table if not exists public.works (
-  work_id uuid primary key default extensions.gen_random_uuid(),
-  client_uid text not null,
-  user_id uuid references public.app_users(id) on delete set null,
-  work_name text,
-  scene_type text,
-  template_id text references public.templates(template_id) on delete set null,
-  work_data jsonb not null,
-  preview_url text,
-  is_private boolean default false,
-  status text default 'active',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
-drop trigger if exists trg_works_updated on public.works;
-create trigger trg_works_updated before update on public.works
-for each row execute function public.set_updated_at();
-
-create index if not exists idx_works_client on public.works(client_uid);
-create index if not exists idx_templates_scene on public.templates(scene_type);
-
--- =============================================
--- RLS 策略（原型期宽松，上线前请收紧）
--- =============================================
-alter table public.templates enable row level security;
-alter table public.works enable row level security;
-alter table public.app_users enable row level security;
-
--- 模板：任何人可读
+end $$ language plpgsql;
 do $$ begin
-  create policy templates_select_all on public.templates for select using (true);
-exception when duplicate_object then null; end $$;
+  if not exists (select 1 from pg_trigger where tgname='trg_auth_users_updated') then
+    create trigger trg_auth_users_updated before update on public.auth_users for each row execute function public.set_updated_at();
+  end if;
+  if not exists (select 1 from pg_trigger where tgname='trg_profiles_updated') then
+    create trigger trg_profiles_updated before update on public.profiles for each row execute function public.set_updated_at();
+  end if;
+  if not exists (select 1 from pg_trigger where tgname='trg_privacy_updated') then
+    create trigger trg_privacy_updated before update on public.privacy_settings for each row execute function public.set_updated_at();
+  end if;
+end $$;
 
--- 作品：允许匿名插入/读取（原型期）
-do $$ begin
-  create policy works_insert_all on public.works for insert with check (true);
-exception when duplicate_object then null; end $$;
+-- 8) RLS (dev-open; tighten later)
+alter table public.auth_users enable row level security;
+alter table public.profiles enable row level security;
+alter table public.privacy_settings enable row level security;
+alter table public.notifications enable row level security;
+alter table public.favorites enable row level security;
 
 do $$ begin
-  create policy works_select_all on public.works for select using (true);
+  create policy au_read_all on public.auth_users for select using (true);
 exception when duplicate_object then null; end $$;
-
--- 用户表：默认不开放读取；仅允许注册函数写入
 do $$ begin
-  create policy app_users_block_select on public.app_users for select using (false);
+  create policy prw_all on public.profiles for all using (true) with check (true);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy ps_all on public.privacy_settings for all using (true) with check (true);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy nf_all on public.notifications for all using (true) with check (true);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy fav_all on public.favorites for all using (true) with check (true);
 exception when duplicate_object then null; end $$;
 
--- =============================================
--- 安全函数：注册 / 登录（供 REST RPC 调用）
--- =============================================
-
--- 注册：写入哈希后的密码，返回精简用户信息
-create or replace function public.register_user(
-  p_phone text,
-  p_password text,
-  p_name text default null
-)
-returns json language plpgsql security definer set search_path = public, extensions as $$
-declare v_user public.app_users;
+-- 9) RPC: register_user
+create or replace function public.register_user(p_phone text, p_password text, p_name text default null)
+returns json language plpgsql security definer set search_path = public as $$
+declare v_user public.auth_users; v_exists boolean;
 begin
-  if p_phone is null or length(trim(p_phone)) = 0 then
-    return json_build_object('success', false, 'message', '手机号不能为空');
+  select exists(select 1 from public.auth_users where phone = p_phone) into v_exists;
+  if v_exists then
+    return json_build_object('success', false, 'message', 'Phone already registered');
   end if;
-  if p_password is null or length(p_password) < 6 then
-    return json_build_object('success', false, 'message', '密码至少6位');
-  end if;
-
-  insert into public.app_users(phone, password_hash, name)
-  values (trim(p_phone), extensions.crypt(p_password, extensions.gen_salt('bf')), nullif(trim(p_name),''))
+  insert into public.auth_users(phone, password_hash, name)
+  values (p_phone, extensions.crypt(p_password, extensions.gen_salt('bf')), coalesce(p_name, ''))
   returning * into v_user;
-
-  return json_build_object(
-    'success', true,
-    'user', json_build_object(
-      'id', v_user.id,
-      'phone', v_user.phone,
-      'name', coalesce(v_user.name, ''),
-      'role', v_user.role,
-      'status', v_user.status
-    )
-  );
-exception when unique_violation then
-  return json_build_object('success', false, 'message', '该手机号已注册');
-end; $$;
-
-revoke all on function public.register_user(text, text, text) from public;
+  insert into public.profiles(user_id, nickname) values (v_user.id, coalesce(p_name, '')) on conflict do nothing;
+  insert into public.privacy_settings(user_id) values (v_user.id) on conflict do nothing;
+  return json_build_object('success', true, 'user', json_build_object(
+    'id', v_user.id, 'phone', v_user.phone, 'name', v_user.name, 'role', v_user.role, 'status', v_user.status
+  ));
+end $$;
 grant execute on function public.register_user(text, text, text) to anon, authenticated;
 
--- 登录：校验密码，更新最后登录时间
-create or replace function public.login_user(
-  p_phone text,
-  p_password text
-)
-returns json language plpgsql security definer set search_path = public, extensions as $$
-declare v_user public.app_users;
+-- 10) RPC: login_user
+create or replace function public.login_user(p_phone text, p_password text)
+returns json language plpgsql security definer set search_path = public as $$
+declare v_user public.auth_users;
 begin
-  select * into v_user from public.app_users where phone = trim(p_phone) limit 1;
-  if not found then
-    return json_build_object('success', false, 'message', '用户不存在');
-  end if;
-
-  if v_user.password_hash = extensions.crypt(p_password, v_user.password_hash) then
-    update public.app_users set last_login = now() where id = v_user.id;
-    return json_build_object(
-      'success', true,
-      'user', json_build_object(
-        'id', v_user.id,
-        'phone', v_user.phone,
-        'name', coalesce(v_user.name, ''),
-        'role', v_user.role,
-        'status', v_user.status
-      )
-    );
-  else
-    return json_build_object('success', false, 'message', '手机号或密码错误');
-  end if;
-end; $$;
-
-revoke all on function public.login_user(text, text) from public;
-grant execute on function public.login_user(text, text) to anon, authenticated;
-
--- 获取用户资料（SECURITY DEFINER 绕过 RLS，仅返回可公开字段）
-create or replace function public.get_user_profile(p_user_id uuid)
-returns json language plpgsql security definer set search_path = public, extensions as $$
-declare v public.app_users;
-begin
-  select * into v from public.app_users where id = p_user_id limit 1;
-  if not found then
-    return json_build_object('success', false, 'message', '用户不存在');
+  select * into v_user from public.auth_users where phone = p_phone limit 1;
+  if not found then return json_build_object('success', false, 'message', 'User not found'); end if;
+  if extensions.crypt(p_password, v_user.password_hash) <> v_user.password_hash then
+    return json_build_object('success', false, 'message', 'Invalid credentials');
   end if;
   return json_build_object('success', true, 'user', json_build_object(
-    'id', v.id,
-    'phone', v.phone,
-    'name', coalesce(v.name,''),
-    'nickname', coalesce(v.nickname,''),
-    'avatar_url', coalesce(v.avatar_url,''),
-    'bio', coalesce(v.bio,''),
-    'location', coalesce(v.location,''),
-    'website', coalesce(v.website,''),
-    'banner_url', coalesce(v.banner_url,''),
-    'member_status', v.member_status,
-    'member_expire_time', v.member_expire_time,
-    'role', v.role,
-    'status', v.status,
-    'created_at', v.created_at
+    'id', v_user.id, 'phone', v_user.phone, 'name', v_user.name, 'role', v_user.role, 'status', v_user.status
   ));
-end; $$;
+end $$;
+grant execute on function public.login_user(text, text) to anon, authenticated;
 
-revoke all on function public.get_user_profile(uuid) from public;
+-- 11) RPC: get_user_profile
+create or replace function public.get_user_profile(p_user_id uuid)
+returns json language plpgsql security definer set search_path = public as $$
+declare u public.auth_users; p public.profiles; s public.privacy_settings;
+begin
+  select * into u from public.auth_users where id = p_user_id; if not found then
+    return json_build_object('success', false, 'message', 'User not found'); end if;
+  select * into p from public.profiles where user_id = p_user_id;
+  select * into s from public.privacy_settings where user_id = p_user_id;
+  return json_build_object('success', true, 'user', json_build_object(
+    'id', u.id, 'phone', u.phone, 'name', u.name,
+    'nickname', coalesce(p.nickname, u.name), 'avatar_url', coalesce(p.avatar_url,''),
+    'bio', coalesce(p.bio,''), 'location', coalesce(p.location,''), 'website', coalesce(p.website,''),
+    'banner_url', coalesce(p.banner_url,''), 'member_status', coalesce(p.member_status,false),
+    'member_expire', p.member_expire, 'security_level', coalesce(p.security_level,'standard'),
+    'privacy_settings', json_build_object(
+      'profile_visible', coalesce(s.profile_visible,true),
+      'works_visible', coalesce(s.works_visible,true),
+      'show_online_status', coalesce(s.show_online_status,true)
+    )
+  ));
+end $$;
 grant execute on function public.get_user_profile(uuid) to anon, authenticated;
 
--- 更新用户资料（限制允许更新的列）
+-- 12) RPC: update_user_profile
 create or replace function public.update_user_profile(
   p_user_id uuid,
   p_name text default null,
@@ -232,88 +205,174 @@ create or replace function public.update_user_profile(
   p_website text default null,
   p_banner_url text default null
 )
-returns json language plpgsql security definer set search_path = public, extensions as $$
-declare v public.app_users;
+returns json language plpgsql security definer set search_path = public as $$
+declare u public.auth_users; p public.profiles;
 begin
-  update public.app_users set
-    name = coalesce(p_name, name),
-    nickname = coalesce(p_nickname, nickname),
-    avatar_url = coalesce(p_avatar_url, avatar_url),
-    bio = coalesce(p_bio, bio),
-    location = coalesce(p_location, location),
-    website = coalesce(p_website, website),
-    banner_url = coalesce(p_banner_url, banner_url),
+  update public.auth_users set name = coalesce(p_name, name), updated_at = now() where id = p_user_id returning * into u;
+  insert into public.profiles(user_id, nickname, avatar_url, bio, location, website, banner_url)
+  values (p_user_id, p_nickname, p_avatar_url, p_bio, p_location, p_website, p_banner_url)
+  on conflict (user_id) do update set
+    nickname = coalesce(excluded.nickname, public.profiles.nickname),
+    avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+    bio = coalesce(excluded.bio, public.profiles.bio),
+    location = coalesce(excluded.location, public.profiles.location),
+    website = coalesce(excluded.website, public.profiles.website),
+    banner_url = coalesce(excluded.banner_url, public.profiles.banner_url),
     updated_at = now()
-  where id = p_user_id
-  returning * into v;
-
-  if not found then
-    return json_build_object('success', false, 'message', '用户不存在');
-  end if;
-
+  returning * into p;
   return json_build_object('success', true, 'user', json_build_object(
-    'id', v.id,
-    'phone', v.phone,
-    'name', coalesce(v.name,''),
-    'nickname', coalesce(v.nickname,''),
-    'avatar_url', coalesce(v.avatar_url,''),
-    'bio', coalesce(v.bio,''),
-    'location', coalesce(v.location,''),
-    'website', coalesce(v.website,''),
-    'banner_url', coalesce(v.banner_url,''),
-    'member_status', v.member_status,
-    'member_expire_time', v.member_expire_time
+    'id', u.id, 'phone', u.phone, 'name', u.name,
+    'nickname', p.nickname, 'avatar_url', p.avatar_url, 'bio', p.bio, 'location', p.location,
+    'website', p.website, 'banner_url', p.banner_url
   ));
-end; $$;
-
-revoke all on function public.update_user_profile(uuid, text, text, text, text, text, text, text) from public;
+end $$;
 grant execute on function public.update_user_profile(uuid, text, text, text, text, text, text, text) to anon, authenticated;
 
--- 用户统计（作品/收藏）
-create table if not exists public.user_favorites (
-  id uuid primary key default extensions.gen_random_uuid(),
-  user_id uuid references public.app_users(id) on delete cascade,
-  template_id text references public.templates(template_id) on delete cascade,
-  created_at timestamptz default now()
-);
-
-alter table public.user_favorites enable row level security;
-do $$ begin
-  create policy user_favorites_select_all on public.user_favorites for select using (true);
-exception when duplicate_object then null; end $$;
-
+-- 13) RPC: get_user_stats
 create or replace function public.get_user_stats(p_user_id uuid, p_client_uid text default null)
-returns json language plpgsql security definer set search_path = public, extensions as $$
-declare v_works int; v_fav int;
+returns json language plpgsql security definer set search_path = public as $$
+declare v_works int := 0; v_fav int := 0; v_drafts int := 0;
 begin
   if p_user_id is not null then
     select count(*) into v_works from public.works where user_id = p_user_id;
-  else
+    select count(*) into v_fav from public.favorites where user_id = p_user_id;
+  elsif p_client_uid is not null then
     select count(*) into v_works from public.works where client_uid = p_client_uid;
   end if;
-
-  if p_user_id is not null then
-    select count(*) into v_fav from public.user_favorites where user_id = p_user_id;
-  else
-    v_fav := 0;
-  end if;
-
-  return json_build_object('success', true, 'stats', json_build_object('works', coalesce(v_works,0), 'favorites', coalesce(v_fav,0)));
-end; $$;
-
-revoke all on function public.get_user_stats(uuid, text) from public;
+  return json_build_object('success', true, 'stats', json_build_object(
+    'works', coalesce(v_works,0), 'favorites', coalesce(v_fav,0), 'drafts', coalesce(v_drafts,0)
+  ));
+end $$;
 grant execute on function public.get_user_stats(uuid, text) to anon, authenticated;
 
--- =============================================
--- 最小示例数据（可多次执行）
--- =============================================
-insert into public.templates (template_id, scene_type, template_name, cover_color, template_data)
-values
-  ('tpl_social_01','social','清新分享卡片','#EAF5FF', '{"size":{"w":1080,"h":1080},"backgroundColor":"#EAF5FF","elements":[{"id":"t1","type":"text","text":"今日好物分享","color":"#111","fontSize":72,"x":540,"y":160,"align":"center"},{"id":"r1","type":"rect","color":"#07c160","width":720,"height":4,"x":540,"y":230}] }'::jsonb),
-  ('tpl_ecomm_01','ecommerce','电商主图简洁','#FFF3E0', '{"size":{"w":800,"h":800},"backgroundColor":"#FFF3E0","elements":[{"id":"t2","type":"text","text":"本周特惠","color":"#E65100","fontSize":96,"x":400,"y":200,"align":"center"},{"id":"t3","type":"text","text":"限时9.9","color":"#111","fontSize":64,"x":400,"y":320,"align":"center"}] }'::jsonb)
-on conflict (template_id) do nothing;
+-- 14) RPC: update_user_password
+create or replace function public.update_user_password(p_user_id uuid, p_old_password text, p_new_password text)
+returns json language plpgsql security definer set search_path = public as $$
+declare v_user public.auth_users;
+begin
+  select * into v_user from public.auth_users where id = p_user_id;
+  if not found then return json_build_object('success', false, 'message', 'User not found'); end if;
+  if extensions.crypt(p_old_password, v_user.password_hash) <> v_user.password_hash then
+    return json_build_object('success', false, 'message', 'Old password incorrect');
+  end if;
+  update public.auth_users set password_hash = extensions.crypt(p_new_password, extensions.gen_salt('bf')), updated_at = now() where id = p_user_id;
+  return json_build_object('success', true, 'message', 'Password updated');
+end $$;
+grant execute on function public.update_user_password(uuid, text, text) to anon, authenticated;
 
--- 可选：初始化一个管理员账号（请在控制台手动执行一次并修改手机号与密码）
--- insert into public.app_users(phone, password_hash, name, role)
--- values ('13800000000', crypt('admin123', gen_salt('bf')), '系统管理员', 'admin')
--- on conflict (phone) do nothing;
+-- 15) RPC: two factor toggles (placeholder)
+create or replace function public.enable_two_factor_auth(p_user_id uuid)
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  update public.profiles set two_factor_enabled = true, updated_at = now() where user_id = p_user_id;
+  return json_build_object('success', true, 'qrCode', null);
+end $$;
+grant execute on function public.enable_two_factor_auth(uuid) to anon, authenticated;
+
+create or replace function public.disable_two_factor_auth(p_user_id uuid, p_code text)
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  update public.profiles set two_factor_enabled = false, updated_at = now() where user_id = p_user_id;
+  return json_build_object('success', true);
+end $$;
+grant execute on function public.disable_two_factor_auth(uuid, text) to anon, authenticated;
+
+-- 16) RPC: notifications CRUD
+create or replace function public.get_user_notifications(p_user_id uuid, p_page int default 1, p_page_size int default 20)
+returns json language plpgsql security definer set search_path = public as $$
+declare v_total int; v_rows json;
+begin
+  select count(*) into v_total from public.notifications where user_id = p_user_id;
+  select coalesce(json_agg(x), '[]'::json) into v_rows from (
+    select id, type, title, content, to_char(created_at, 'YYYY-MM-DD HH24:MI') as time, is_read as read
+    from public.notifications
+    where user_id = p_user_id
+    order by created_at desc
+    offset greatest(p_page-1,0)*p_page_size limit p_page_size
+  ) as x;
+  return json_build_object('success', true, 'notifications', v_rows, 'total', v_total);
+end $$;
+grant execute on function public.get_user_notifications(uuid, int, int) to anon, authenticated;
+
+create or replace function public.mark_notification_read(p_user_id uuid, p_notification_id bigint)
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  update public.notifications set is_read = true where id = p_notification_id and user_id = p_user_id;
+  return json_build_object('success', true);
+end $$;
+grant execute on function public.mark_notification_read(uuid, bigint) to anon, authenticated;
+
+create or replace function public.delete_notification(p_user_id uuid, p_notification_id bigint)
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  delete from public.notifications where id = p_notification_id and user_id = p_user_id;
+  return json_build_object('success', true);
+end $$;
+grant execute on function public.delete_notification(uuid, bigint) to anon, authenticated;
+
+-- 17) RPC: privacy settings
+create or replace function public.get_privacy_settings(p_user_id uuid)
+returns json language plpgsql security definer set search_path = public as $$
+declare s public.privacy_settings;
+begin
+  select * into s from public.privacy_settings where user_id = p_user_id;
+  if not found then
+    insert into public.privacy_settings(user_id) values (p_user_id) returning * into s;
+  end if;
+  return json_build_object('success', true, 'settings', json_build_object(
+    'profile_visible', coalesce(s.profile_visible, true),
+    'works_visible', coalesce(s.works_visible, true),
+    'show_online_status', coalesce(s.show_online_status, true),
+    'data_collection', coalesce(s.data_collection, true),
+    'marketing_emails', coalesce(s.marketing_emails, false),
+    'personalized_ads', coalesce(s.personalized_ads, false)
+  ));
+end $$;
+grant execute on function public.get_privacy_settings(uuid) to anon, authenticated;
+
+create or replace function public.update_privacy_settings(p_user_id uuid, p_settings jsonb)
+returns json language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.privacy_settings(user_id, profile_visible, works_visible, show_online_status, data_collection, marketing_emails, personalized_ads)
+  values (
+    p_user_id,
+    coalesce((p_settings->>'profile_visible')::boolean, true),
+    coalesce((p_settings->>'works_visible')::boolean, true),
+    coalesce((p_settings->>'show_online_status')::boolean, true),
+    coalesce((p_settings->>'data_collection')::boolean, true),
+    coalesce((p_settings->>'marketing_emails')::boolean, false),
+    coalesce((p_settings->>'personalized_ads')::boolean, false)
+  )
+  on conflict (user_id) do update set
+    profile_visible = coalesce((p_settings->>'profile_visible')::boolean, public.privacy_settings.profile_visible),
+    works_visible = coalesce((p_settings->>'works_visible')::boolean, public.privacy_settings.works_visible),
+    show_online_status = coalesce((p_settings->>'show_online_status')::boolean, public.privacy_settings.show_online_status),
+    data_collection = coalesce((p_settings->>'data_collection')::boolean, public.privacy_settings.data_collection),
+    marketing_emails = coalesce((p_settings->>'marketing_emails')::boolean, public.privacy_settings.marketing_emails),
+    personalized_ads = coalesce((p_settings->>'personalized_ads')::boolean, public.privacy_settings.personalized_ads),
+    updated_at = now();
+  return json_build_object('success', true);
+end $$;
+grant execute on function public.update_privacy_settings(uuid, jsonb) to anon, authenticated;
+
+-- 18) RPC: dashboard stats (optional for admin)
+create or replace function public.get_dashboard_stats()
+returns json language plpgsql security definer set search_path = public as $$
+declare a int; b int; c int; d int;
+begin
+  select count(*) into a from public.auth_users;
+  select count(*) into b from public.templates where status='active';
+  select count(*) into c from public.works; 
+  select count(*) into d from public.auth_users where updated_at > now() - interval '7 days';
+  return json_build_object('totalUsers', a, 'totalTemplates', b, 'totalWorks', c, 'activeUsers', d);
+end $$;
+grant execute on function public.get_dashboard_stats() to anon, authenticated;
+
+-- 19) Seed system notification (optional)
+do $$ begin
+  if exists(select 1 from public.auth_users limit 1) then
+    insert into public.notifications(user_id, type, title, content)
+    select id, 'system', '欢迎使用轻创图文', '这是您的系统欢迎通知。' from public.auth_users
+    on conflict do nothing;
+  end if;
+end $$;

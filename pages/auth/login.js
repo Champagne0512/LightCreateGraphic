@@ -108,7 +108,7 @@ Page({
     return true;
   },
 
-  // 手机号登录（优先走 Supabase RPC，失败回退本地模拟）
+  // 手机号登录（优先 Supabase RPC，失败回退本地模拟）
   async loginWithPhone(phone, password) {
     const res = await supa.signInPhone(phone, password);
     if (res && res.success) {

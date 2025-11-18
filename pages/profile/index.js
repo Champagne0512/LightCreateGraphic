@@ -37,10 +37,12 @@ Page({
     unreadCount: 0,
     activeTab: 'profile',
     editing: false,
-    isLoading: false
+    isLoading: false,
+    _preventReload: false
   },
   
   async onShow() {
+    if (this.data._preventReload) return;
     // 本地草稿
     const drafts = loadDrafts();
     this.setData({ drafts, 'stats.drafts': drafts.length });
@@ -115,15 +117,49 @@ Page({
 
   chooseAvatar() {
     const that = this;
-    wx.chooseImage({ count: 1, sizeType: ['compressed'], success(res){
-      const path = (res.tempFilePaths && res.tempFilePaths[0]) || (res.tempFiles && res.tempFiles[0].path);
-      if (path) that.setData({ 'profile.avatar_url': path });
-    }});
+    wx.chooseImage({ 
+      count: 1, 
+      sizeType: ['compressed'], 
+      success: async (res) => {
+        try {
+          that.setData({ _preventReload: true });
+          const path = (res.tempFilePaths && res.tempFilePaths[0]) || (res.tempFiles && res.tempFiles[0].path);
+          if (!path) return;
+          wx.showLoading({ title: '上传中...' });
+          const app = getApp();
+          const uid = (app.globalData.userInfo && app.globalData.userInfo.userId) || '';
+          const up = await supa.uploadAvatar(path, uid);
+          wx.hideLoading();
+          if (up && up.success) {
+            that.setData({ 'profile.avatar_url': up.url });
+            wx.showToast({ title: '头像已更新', icon: 'success' });
+            // 自动保存资料，确保头像持久化
+            await that.saveProfile();
+          } else {
+            wx.showToast({ title: (up && up.message) || '上传失败', icon: 'none' });
+          }
+        } catch (e) {
+          wx.hideLoading();
+          wx.showToast({ title: '上传失败', icon: 'none' });
+        } finally { that.setData({ _preventReload: false }); }
+      }
+    });
   },
 
   async saveProfile() {
-    const { profile } = this.data;
-    if (!profile.id) return;
+    let { profile } = this.data;
+    // 兜底：如果 profile.id 缺失，用全局 userInfo.userId 回填
+    if (!profile.id) {
+      const app = getApp();
+      const u = app.globalData.userInfo || {};
+      if (u && u.userId) {
+        profile = Object.assign({}, profile, { id: u.userId });
+        this.setData({ profile });
+      } else {
+        wx.showToast({ title: '请先登录', icon: 'none' });
+        return;
+      }
+    }
     this.setData({ isLoading: true });
     try {
       const payload = {
@@ -141,7 +177,7 @@ Page({
         wx.showToast({ title: '保存成功', icon: 'success' });
         // 更新全局 userInfo 的可见字段
         const app = getApp();
-        app.globalData.userInfo = Object.assign({}, app.globalData.userInfo || {}, { nickname: res.user.nickname || res.user.name });
+        app.globalData.userInfo = Object.assign({}, app.globalData.userInfo || {}, { nickname: res.user.nickname || res.user.name, avatar: res.user.avatar_url });
         this.setData({ profile: Object.assign({}, this.data.profile, res.user), editing: false });
       } else {
         wx.showToast({ title: (res && res.message) || '保存失败', icon: 'none' });

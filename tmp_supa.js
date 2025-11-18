@@ -1,4 +1,4 @@
-const config = require('../config.js');
+﻿const config = require('../config.js');
 
 // Supabase REST wrapper for WeChat Mini Program (wx.request)
 class SupabaseService {
@@ -60,40 +60,6 @@ class SupabaseService {
   // RPC
   wxRpc(name, params) { return this.wxRest(`/rest/v1/rpc/${name}`, { method: 'POST', data: params }); }
 
-  // Storage: upload avatar to public bucket (WeChat uploadFile)
-  async uploadAvatar(filePath, userId) {
-    if (!this.enabled()) {
-      return { success: true, url: filePath };
-    }
-    return new Promise((resolve) => {
-      try {
-        const bucket = (require('../config.js').storage && require('../config.js').storage.bucket) || 'avatars';
-        const ext = (filePath.split('.').pop() || 'jpg').toLowerCase();
-        const key = `${bucket}/${encodeURIComponent(userId || 'anon')}/${Date.now()}.${ext}`;
-        const uploadUrl = `${this.url}/storage/v1/object/${key}`;
-        wx.uploadFile({
-          url: uploadUrl,
-          filePath,
-          name: 'file',
-          header: {
-            'Authorization': `Bearer ${this.anonKey}`,
-            'apikey': this.anonKey,
-            'Cache-Control': 'max-age=31536000',
-            'x-upsert': 'true'
-          },
-          success: (res) => {
-            // Public bucket can be accessed via /storage/v1/object/public/
-            const publicUrl = `${this.url}/storage/v1/object/public/${key}`;
-            resolve({ success: true, url: publicUrl });
-          },
-          fail: (err) => resolve({ success: false, message: err && err.errMsg || 'upload failed' })
-        });
-      } catch (e) {
-        resolve({ success: false, message: e.message || 'upload failed' });
-      }
-    });
-  }
-
   // Auth: phone + password (custom table)
   async signUpPhone(phone, password, name = '') {
     if (!this.enabled()) {
@@ -109,7 +75,7 @@ class SupabaseService {
   async signInPhone(phone, password) {
     if (!this.enabled()) {
       const role = phone === '13800000000' ? 'admin' : 'user';
-      return { success: true, user: { id: `mock-${Date.now()}`, phone, name: `用户${phone.slice(-4)}`, role, status: 'active' }, token: 'mock' };
+      return { success: true, user: { id: `mock-${Date.now()}`, phone, name: `鐢ㄦ埛${phone.slice(-4)}`, role, status: 'active' }, token: 'mock' };
     }
     try {
       const data = await this.wxRpc('login_user', { p_phone: phone, p_password: password });
@@ -142,7 +108,7 @@ class SupabaseService {
 
   async getDashboardStats() {
     if (!this.enabled()) return { totalUsers: 1234, totalTemplates: 56, totalWorks: 789, activeUsers: 45 };
-    try { return await this.wxRpc('get_dashboard_stats', {}); } catch { return { totalUsers: 0, totalTemplates: 0, totalWorks: 0, activeUsers: 0 }; }
+    return { totalUsers: 0, totalTemplates: 0, totalWorks: 0, activeUsers: 0 };
   }
 
   async getUsers(filter = {}) {
@@ -150,33 +116,18 @@ class SupabaseService {
     return [];
   }
 
-  async saveUserWork(workData) {
-    if (!this.enabled()) return { success: true, id: `mock-${Date.now()}` };
-    try {
-      const payload = Object.assign({}, workData);
-      const res = await this.wxRest('/rest/v1/works', { method: 'POST', data: payload });
-      const id = Array.isArray(res) && res[0] && (res[0].work_id || res[0].id) || null;
-      return { success: true, id };
-    } catch (e) { return { success: false, message: e.message || '保存失败' }; }
-  }
-
-  async getUserWorks(userId) {
-    if (!this.enabled()) return [];
-    try {
-      const q = `?select=work_id,work_name,scene_type,template_id,created_at&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=100`;
-      return await this.wxRest(`/rest/v1/works${q}`);
-    } catch { return []; }
-  }
+  async saveUserWork(workData) { return { success: true, id: `work-${Date.now()}` }; }
+  async getUserWorks(userId) { return []; }
 
   // ===== Profile RPCs =====
   async getUserProfileById(userId) {
     if (!this.enabled()) {
-      return { success: true, user: { id: userId || `mock-${Date.now()}`, phone: '13800000000', name: '用户', nickname: '用户', avatar_url: '', bio: '', location: '', website: '', member_status: false } };
+      return { success: true, user: { id: userId || `mock-${Date.now()}`, phone: '13800000000', name: '鐢ㄦ埛', nickname: '鐢ㄦ埛', avatar_url: '', bio: '', location: '', website: '', member_status: false } };
     }
     try {
       const data = await this.wxRpc('get_user_profile', { p_user_id: userId });
       return data;
-    } catch (e) { return { success: false, message: e.message || '获取用户信息失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鑾峰彇鐢ㄦ埛淇℃伅澶辫触' }; }
   }
 
   async updateUserProfile(payload) {
@@ -186,7 +137,7 @@ class SupabaseService {
     try {
       const data = await this.wxRpc('update_user_profile', payload);
       return data;
-    } catch (e) { return { success: false, message: e.message || '更新失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鏇存柊澶辫触' }; }
   }
 
   async getUserStats(userId, clientUid) {
@@ -196,13 +147,13 @@ class SupabaseService {
     try {
       const data = await this.wxRpc('get_user_stats', { p_user_id: userId, p_client_uid: clientUid || null });
       return data;
-    } catch (e) { return { success: false, message: e.message || '获取统计失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鑾峰彇缁熻澶辫触' }; }
   }
 
   // ===== Security Settings =====
   async updatePassword(userId, oldPassword, newPassword) {
     if (!this.enabled()) {
-      return { success: true, message: '密码更新成功' };
+      return { success: true, message: '瀵嗙爜鏇存柊鎴愬姛' };
     }
     try {
       const data = await this.wxRpc('update_user_password', { 
@@ -211,22 +162,22 @@ class SupabaseService {
         p_new_password: newPassword 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '密码更新失败' }; }
+    } catch (e) { return { success: false, message: e.message || '瀵嗙爜鏇存柊澶辫触' }; }
   }
 
   async enableTwoFactorAuth(userId) {
     if (!this.enabled()) {
-      return { success: true, message: '双重验证已开启', qrCode: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xMDAgNTBoMjV2MjVoLTI1eiIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==' };
+      return { success: true, message: '鍙岄噸楠岃瘉宸插紑鍚?, qrCode: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xMDAgNTBoMjV2MjVoLTI1eiIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==' };
     }
     try {
       const data = await this.wxRpc('enable_two_factor_auth', { p_user_id: userId });
       return data;
-    } catch (e) { return { success: false, message: e.message || '开启双重验证失败' }; }
+    } catch (e) { return { success: false, message: e.message || '寮€鍚弻閲嶉獙璇佸け璐? }; }
   }
 
   async disableTwoFactorAuth(userId, code) {
     if (!this.enabled()) {
-      return { success: true, message: '双重验证已关闭' };
+      return { success: true, message: '鍙岄噸楠岃瘉宸插叧闂? };
     }
     try {
       const data = await this.wxRpc('disable_two_factor_auth', { 
@@ -234,7 +185,7 @@ class SupabaseService {
         p_code: code 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '关闭双重验证失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鍏抽棴鍙岄噸楠岃瘉澶辫触' }; }
   }
 
   // ===== Notifications Management =====
@@ -249,12 +200,12 @@ class SupabaseService {
         p_page_size: pageSize 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '获取通知失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鑾峰彇閫氱煡澶辫触' }; }
   }
 
   async markNotificationAsRead(userId, notificationId) {
     if (!this.enabled()) {
-      return { success: true, message: '标记成功' };
+      return { success: true, message: '鏍囪鎴愬姛' };
     }
     try {
       const data = await this.wxRpc('mark_notification_read', { 
@@ -262,12 +213,12 @@ class SupabaseService {
         p_notification_id: notificationId 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '标记失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鏍囪澶辫触' }; }
   }
 
   async deleteNotification(userId, notificationId) {
     if (!this.enabled()) {
-      return { success: true, message: '删除成功' };
+      return { success: true, message: '鍒犻櫎鎴愬姛' };
     }
     try {
       const data = await this.wxRpc('delete_notification', { 
@@ -275,7 +226,7 @@ class SupabaseService {
         p_notification_id: notificationId 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '删除失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鍒犻櫎澶辫触' }; }
   }
 
   // ===== Privacy Settings =====
@@ -292,12 +243,12 @@ class SupabaseService {
     try {
       const data = await this.wxRpc('get_privacy_settings', { p_user_id: userId });
       return data;
-    } catch (e) { return { success: false, message: e.message || '获取隐私设置失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鑾峰彇闅愮璁剧疆澶辫触' }; }
   }
 
   async updatePrivacySettings(userId, settings) {
     if (!this.enabled()) {
-      return { success: true, message: '隐私设置已更新' };
+      return { success: true, message: '闅愮璁剧疆宸叉洿鏂? };
     }
     try {
       const data = await this.wxRpc('update_privacy_settings', { 
@@ -305,7 +256,7 @@ class SupabaseService {
         p_settings: settings 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '更新隐私设置失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鏇存柊闅愮璁剧疆澶辫触' }; }
   }
 
   // ===== Extended Statistics =====
@@ -324,7 +275,7 @@ class SupabaseService {
         p_time_range: timeRange 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '获取扩展统计失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鑾峰彇鎵╁睍缁熻澶辫触' }; }
   }
 
   async getStatisticsChartData(userId, timeRange = 'week') {
@@ -345,7 +296,7 @@ class SupabaseService {
         p_time_range: timeRange 
       });
       return data;
-    } catch (e) { return { success: false, message: e.message || '获取图表数据失败' }; }
+    } catch (e) { return { success: false, message: e.message || '鑾峰彇鍥捐〃鏁版嵁澶辫触' }; }
   }
 
   async listWorks(clientUid, userId = null, limit = 50) {
@@ -360,9 +311,9 @@ class SupabaseService {
   // Mock data
   getMockTemplates(category = null) {
     const templates = [
-      { id: 'template-1', name: '商务会议海报', category: '商务海报', cover_url: '/images/templates/business-poster.jpg', description: '适用于商务会议', download_count: 156, usage_count: 89, status: 'active', created_at: '2024-01-15T00:00:00Z' },
-      { id: 'template-2', name: '产品促销海报', category: '电商产品', cover_url: '/images/templates/promotion-poster.jpg', description: '电商促销', download_count: 234, usage_count: 167, status: 'active', created_at: '2024-02-20T00:00:00Z' },
-      { id: 'template-3', name: '教育培训模板', category: '教育培训', cover_url: '/images/templates/education-poster.jpg', description: '教育培训', download_count: 89, usage_count: 45, status: 'inactive', created_at: '2024-03-10T00:00:00Z' }
+      { id: 'template-1', name: '鍟嗗姟浼氳娴锋姤', category: '鍟嗗姟娴锋姤', cover_url: '/images/templates/business-poster.jpg', description: '閫傜敤浜庡晢鍔′細璁?, download_count: 156, usage_count: 89, status: 'active', created_at: '2024-01-15T00:00:00Z' },
+      { id: 'template-2', name: '浜у搧淇冮攢娴锋姤', category: '鐢靛晢浜у搧', cover_url: '/images/templates/promotion-poster.jpg', description: '鐢靛晢淇冮攢', download_count: 234, usage_count: 167, status: 'active', created_at: '2024-02-20T00:00:00Z' },
+      { id: 'template-3', name: '鏁欒偛鍩硅妯℃澘', category: '鏁欒偛鍩硅', cover_url: '/images/templates/education-poster.jpg', description: '鏁欒偛鍩硅', download_count: 89, usage_count: 45, status: 'inactive', created_at: '2024-03-10T00:00:00Z' }
     ];
     if (category) return templates.filter(t => t.category === category);
     return templates;
@@ -370,9 +321,9 @@ class SupabaseService {
 
   getMockUsers(filter = {}) {
     const users = [
-      { id: 'user-1', phone: '13800000001', name: '张三', role: 'user', status: 'active', last_login: '2024-11-17T09:30:00Z', created_at: '2024-01-15T00:00:00Z' },
-      { id: 'user-2', phone: '13800000002', name: '李四', role: 'user', status: 'active', last_login: '2024-11-16T14:20:00Z', created_at: '2024-02-20T00:00:00Z' },
-      { id: 'admin-user', phone: '13800000000', name: '管理员', role: 'admin', status: 'active', last_login: '2024-11-17T10:00:00Z', created_at: '2024-01-01T00:00:00Z' }
+      { id: 'user-1', phone: '13800000001', name: '寮犱笁', role: 'user', status: 'active', last_login: '2024-11-17T09:30:00Z', created_at: '2024-01-15T00:00:00Z' },
+      { id: 'user-2', phone: '13800000002', name: '鏉庡洓', role: 'user', status: 'active', last_login: '2024-11-16T14:20:00Z', created_at: '2024-02-20T00:00:00Z' },
+      { id: 'admin-user', phone: '13800000000', name: '绠＄悊鍛?, role: 'admin', status: 'active', last_login: '2024-11-17T10:00:00Z', created_at: '2024-01-01T00:00:00Z' }
     ];
     if (filter.status) return users.filter(u => u.status === filter.status);
     if (filter.role) return users.filter(u => u.role === filter.role);
@@ -399,7 +350,7 @@ module.exports = {
   updateUserProfile: (payload) => supabaseService.updateUserProfile(payload),
   getUserStats: (userId, clientUid) => supabaseService.getUserStats(userId, clientUid),
   
-  // 新增的用户中心相关API
+  // 鏂板鐨勭敤鎴蜂腑蹇冪浉鍏矨PI
   updatePassword: (userId, oldPassword, newPassword) => supabaseService.updatePassword(userId, oldPassword, newPassword),
   enableTwoFactorAuth: (userId) => supabaseService.enableTwoFactorAuth(userId),
   disableTwoFactorAuth: (userId, code) => supabaseService.disableTwoFactorAuth(userId, code),
@@ -411,3 +362,4 @@ module.exports = {
   getUserExtendedStats: (userId, timeRange) => supabaseService.getUserExtendedStats(userId, timeRange),
   getStatisticsChartData: (userId, timeRange) => supabaseService.getStatisticsChartData(userId, timeRange)
 };
+

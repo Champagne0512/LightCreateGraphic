@@ -41,7 +41,7 @@ Page({
     this.setData({ 'formData.agreed': agreed });
   },
 
-  // 处理注册（手机 + 密码）
+  // 处理注册（手机号 + 密码）
   async handleRegister() {
     const { phone, password, confirmPassword, agreed } = this.data.formData;
     if (!this.validateForm()) return;
@@ -116,3 +116,4 @@ Page({
     wx.navigateTo({ url: '/pages/auth/login' });
   }
 });
+

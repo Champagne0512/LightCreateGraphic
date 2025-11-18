@@ -11,7 +11,7 @@
         <view class="hero-stats">
           <view class="stat-item">
             <text class="stat-number">3</text>
-            <text class="stat-label">步出图</text>
+            <text class="stat-label">步上手</text>
           </view>
           <view class="stat-divider"></view>
           <view class="stat-item">
@@ -20,7 +20,7 @@
           </view>
           <view class="stat-divider"></view>
           <view class="stat-item">
-            <text class="stat-number">✓</text>
+            <text class="stat-number">99%</text>
             <text class="stat-label">商用安全</text>
           </view>
         </view>
@@ -41,7 +41,7 @@
       </button>
     </view>
     <view class="search-tags">
-      <text class="tag-label">热门搜索：</text>
+      <text class="tag-label">热门搜索</text>
       <text class="search-tag" bindtap="quickSearch" data-keyword="电商主图">电商主图</text>
       <text class="search-tag" bindtap="quickSearch" data-keyword="社交媒体">社交媒体</text>
       <text class="search-tag" bindtap="quickSearch" data-keyword="海报设计">海报设计</text>
@@ -96,7 +96,7 @@
             <block wx:for="{{cat.children ? cat.children.slice(0, 3) : []}}" wx:key="id" wx:for-item="sub">
               <text class="scene-tag">{{sub.name}}</text>
             </block>
-            <text wx:if="{{cat.children && cat.children.length > 3}}" class="scene-more">+{{cat.children.length - 3}}个</text>
+            <text wx:if="{{cat.children && cat.children.length > 3}}" class="scene-more">+{{cat.children.length - 3}}</text>
           </view>
         </view>
       </block>
@@ -121,7 +121,7 @@
           <view class="template-info">
             <text class="template-desc">{{item.description || '专业的图文设计模板'}}</text>
             <view class="template-stats">
-              <text class="stat">⭐ {{item.rating || 4.8}}</text>
+              <text class="stat">⭐{{item.rating || 4.8}}</text>
               <text class="stat">👁️ {{item.views || '1.2k'}}</text>
             </view>
           </view>
