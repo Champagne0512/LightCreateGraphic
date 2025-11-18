@@ -1,30 +1,292 @@
 <view class="container">
-  <view class="card sec">
-    <view class="title">草稿箱</view>
-    <block wx:if="{{drafts.length}}">
-      <block wx:for="{{drafts}}" wx:key="id">
-        <view class="draft" bindtap="openDraft" data-id="{{item.id}}">
-          <text>{{item.id}}</text>
-          <text class="muted">{{item.size.w}}x{{item.size.h}}</text>
-        </view>
-      </block>
-    </block>
-    <view wx:else class="muted">暂无草稿</view>
-  </view>
-
-  <view class="card sec">
-    <view class="title">关于</view>
-    <view class="row">轻创图文 LightCreate Graphic</view>
-    <view class="row muted">此为雏形版本，用于验证核心流程。</view>
-  </view>
-
-  <view class="card sec" wx:if="{{cloudWorks.length}}">
-    <view class="title">云端作品（Supabase）</view>
-    <block wx:for="{{cloudWorks}}" wx:key="work_id">
-      <view class="draft">
-        <text>{{item.work_name || item.work_id}}</text>
-        <text class="muted">{{item.scene_type || '未知场景'}}</text>
+  <!-- 头部：用户信息 -->
+  <view class="profile-header">
+    <view class="user-info">
+      <view class="user-avatar" bindtap="uploadAvatar">
+        <image wx:if="{{profile.avatar_url}}" class="avatar-img" src="{{profile.avatar_url}}" mode="aspectFill" />
+        <text wx:else>👤</text>
+        <view class="avatar-overlay">更换头像</view>
       </view>
-    </block>
+      <view class="user-details">
+        <view class="user-name">{{profile.nickname || profile.name || '未命名用户'}}</view>
+        <view class="user-id">ID：{{profile.id ? profile.id.slice(0,8) : '--'}} · {{profile.phone || '未绑定'}}</view>
+        <view class="user-status">
+          <text class="status-badge {{profile.member_status ? 'member' : 'free'}}">
+            {{profile.member_status ? '会员' : '免费用户'}}
+          </text>
+          <text class="security-level">安全等级：{{profile.security_level}}</text>
+        </view>
+      </view>
+      <button class="edit-btn" size="mini" bindtap="toggleEdit">{{editing ? '取消' : '编辑'}}</button>
+    </view>
+    
+    <!-- 统计信息 -->
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-num">{{stats.works}}</text>
+        <text class="stat-label">作品</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.favorites}}</text>
+        <text class="stat-label">收藏</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.drafts}}</text>
+        <text class="stat-label">草稿</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.templates}}</text>
+        <text class="stat-label">模板</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.downloads}}</text>
+        <text class="stat-label">下载</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.views}}</text>
+        <text class="stat-label">浏览</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导航标签 -->
+  <view class="tab-container">
+    <view class="tab-item {{activeTab === 'profile' ? 'active' : ''}}" data-tab="profile" bindtap="switchTab">
+      <text>个人资料</text>
+    </view>
+    <view class="tab-item {{activeTab === 'notifications' ? 'active' : ''}}" data-tab="notifications" bindtap="switchTab">
+      <text>消息通知</text>
+      <view wx:if="{{unreadCount > 0}}" class="badge">{{unreadCount}}</view>
+    </view>
+    <view class="tab-item {{activeTab === 'settings' ? 'active' : ''}}" data-tab="settings" bindtap="switchTab">
+      <text>设置</text>
+    </view>
+  </view>
+
+  <!-- 个人资料标签页 -->
+  <view wx:if="{{activeTab === 'profile'}}" class="tab-content">
+    <!-- 编辑资料 -->
+    <view wx:if="{{editing}}" class="content-section">
+      <view class="card">
+        <view class="section-title">完善资料</view>
+        <view class="form-item">
+          <text class="form-label">姓名</text>
+          <input class="form-input" placeholder="请输入姓名" value="{{profile.name}}" bindinput="onNameInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">昵称</text>
+          <input class="form-input" placeholder="请输入昵称" value="{{profile.nickname}}" bindinput="onNicknameInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">签名</text>
+          <input class="form-input" placeholder="这个人很懒，还没有签名" value="{{profile.bio}}" bindinput="onBioInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">城市</text>
+          <input class="form-input" placeholder="城市/地区" value="{{profile.location}}" bindinput="onLocationInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">网站</text>
+          <input class="form-input" placeholder="https://example.com" value="{{profile.website}}" bindinput="onWebsiteInput" />
+        </view>
+        <button class="primary-btn" loading="{{isLoading}}" bindtap="saveProfile">保存资料</button>
+      </view>
+    </view>
+
+    <!-- 功能卡片 -->
+    <view class="content-section">
+      <!-- 安全设置 -->
+      <view class="card" bindtap="navigateToSecurity">
+        <view class="section-title">账户安全</view>
+        <view class="feature-list">
+          <view class="feature-item">
+            <text class="feature-icon">🔒</text>
+            <view class="feature-info">
+              <text class="feature-title">密码修改</text>
+              <text class="feature-desc">定期更新密码保护账户安全</text>
+            </view>
+            <text class="feature-arrow">›</text>
+          </view>
+          <view class="feature-item">
+            <text class="feature-icon">🔐</text>
+            <view class="feature-info">
+              <text class="feature-title">双重验证</text>
+              <text class="feature-desc">开启后需要验证码登录</text>
+            </view>
+            <text class="feature-arrow">›</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 隐私设置 -->
+      <view class="card" bindtap="navigateToPrivacy">
+        <view class="section-title">隐私设置</view>
+        <view class="setting-item">
+          <text class="setting-label">公开个人资料</text>
+          <switch checked="{{profile.privacy_settings.profile_visible}}" data-setting="profile_visible" bindchange="togglePrivacySetting" />
+        </view>
+        <view class="setting-item">
+          <text class="setting-label">公开作品</text>
+          <switch checked="{{profile.privacy_settings.works_visible}}" data-setting="works_visible" bindchange="togglePrivacySetting" />
+        </view>
+        <view class="setting-item">
+          <text class="setting-label">显示在线状态</text>
+          <switch checked="{{profile.privacy_settings.show_online_status}}" data-setting="show_online_status" bindchange="togglePrivacySetting" />
+        </view>
+        <button class="secondary-btn" bindtap="savePrivacySettings">保存设置</button>
+      </view>
+
+      <!-- 数据统计 -->
+      <view class="card" bindtap="navigateToStatistics">
+        <view class="section-title">数据统计</view>
+        <view class="stats-detail">
+          <view class="stat-detail-item">
+            <text class="detail-label">会员天数</text>
+            <text class="detail-value">{{stats.memberDays}} 天</text>
+          </view>
+          <view class="stat-detail-item">
+            <text class="detail-label">模板使用</text>
+            <text class="detail-value">{{stats.templates}} 次</text>
+          </view>
+          <view class="stat-detail-item">
+            <text class="detail-label">作品下载</text>
+            <text class="detail-value">{{stats.downloads}} 次</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 消息通知标签页 -->
+  <view wx:if="{{activeTab === 'notifications'}}" class="tab-content">
+    <view class="content-section">
+      <view class="card">
+        <view class="section-title">消息通知 ({{unreadCount}} 条未读)</view>
+        <block wx:if="{{notifications.length}}">
+          <block wx:for="{{notifications}}" wx:key="id">
+            <view class="notification-item {{item.read ? '' : 'unread'}}">
+              <view class="notification-icon">
+                <text wx:if="{{item.type === 'system'}}">🔔</text>
+                <text wx:if="{{item.type === 'template'}}">📋</text>
+                <text wx:if="{{item.type === 'security'}}">🔒</text>
+              </view>
+              <view class="notification-content">
+                <view class="notification-title">{{item.title}}</view>
+                <view class="notification-text">{{item.content}}</view>
+                <view class="notification-time">{{item.time}}</view>
+              </view>
+              <view class="notification-actions">
+                <text wx:if="{{!item.read}}" class="action-btn" data-id="{{item.id}}" bindtap="markNotificationAsRead">标记已读</text>
+                <text class="action-btn delete" data-id="{{item.id}}" bindtap="deleteNotification">删除</text>
+              </view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="empty-state">
+          <text class="empty-icon">📭</text>
+          <text class="empty-text">暂无通知消息</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设置标签页 -->
+  <view wx:if="{{activeTab === 'settings'}}" class="tab-content">
+    <view class="content-section">
+      <!-- 系统设置 -->
+      <view class="card">
+        <view class="section-title">系统设置</view>
+        <view class="setting-item">
+          <text class="setting-label">推送通知</text>
+          <switch checked="{{true}}" />
+        </view>
+        <view class="setting-item">
+          <text class="setting-label">自动保存草稿</text>
+          <switch checked="{{true}}" />
+        </view>
+        <view class="setting-item">
+          <text class="setting-label">高清图片导出</text>
+          <switch checked="{{false}}" />
+        </view>
+      </view>
+
+      <!-- 帮助与支持 -->
+      <view class="card">
+        <view class="section-title">帮助与支持</view>
+        <view class="help-item">
+          <text class="help-icon">❓</text>
+          <text class="help-text">使用帮助</text>
+          <text class="help-arrow">›</text>
+        </view>
+        <view class="help-item">
+          <text class="help-icon">📞</text>
+          <text class="help-text">联系客服</text>
+          <text class="help-arrow">›</text>
+        </view>
+        <view class="help-item">
+          <text class="help-icon">📝</text>
+          <text class="help-text">意见反馈</text>
+          <text class="help-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 关于 -->
+      <view class="card">
+        <view class="section-title">关于</view>
+        <view class="about-item">
+          <text class="about-label">版本</text>
+          <text class="about-value">v1.0.0</text>
+        </view>
+        <view class="about-item">
+          <text class="about-label">更新日期</text>
+          <text class="about-value">2024-11-17</text>
+        </view>
+        <view class="about-item">
+          <text class="about-label">开发者</text>
+          <text class="about-value">LightCreateGraphic Team</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 草稿与云端作品 -->
+  <view class="content-section">
+    <view class="card">
+      <view class="section-title">我的草稿</view>
+      <block wx:if="{{drafts.length}}">
+        <block wx:for="{{drafts}}" wx:key="id">
+          <view class="draft-item" bindtap="openDraft" data-id="{{item.id}}">
+            <view class="draft-info">
+              <text class="draft-name">{{item.id}}</text>
+              <text class="draft-size">{{item.size.w}}x{{item.size.h}}</text>
+            </view>
+            <view class="draft-arrow">›</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">
+        <text class="empty-icon">🗂️</text>
+        <text class="empty-text">暂无草稿</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">云端作品</view>
+      <block wx:if="{{cloudWorks.length}}">
+        <block wx:for="{{cloudWorks}}" wx:key="work_id">
+          <view class="cloud-item">
+            <view class="cloud-icon">☁️</view>
+            <view class="cloud-info">
+              <view class="cloud-name">{{item.work_name || item.work_id}}</view>
+              <view class="cloud-type">{{item.scene_type || '未分类'}} · {{item.created_at && item.created_at.slice(0,10)}}</view>
+            </view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">
+        <text class="empty-icon">☁️</text>
+        <text class="empty-text">暂无云端作品</text>
+      </view>
+    </view>
   </view>
 </view>

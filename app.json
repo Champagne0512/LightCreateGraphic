@@ -8,6 +8,10 @@
     "pages/export/index",
     "pages/onboarding/index",
     "pages/profile/index",
+    "pages/profile/security/index",
+    "pages/profile/statistics/index",
+    "pages/profile/notifications/index",
+    "pages/profile/privacy/index",
     "pages/admin/dashboard",
     "pages/admin/templates",
     "pages/admin/users"

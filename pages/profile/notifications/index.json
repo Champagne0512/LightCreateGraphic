@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "消息通知",
+  "navigationBarBackgroundColor": "#007bff",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f8f9fa",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 50
+}

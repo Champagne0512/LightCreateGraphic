@@ -1,0 +1,256 @@
+<view class="security-container">
+  <!-- 导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-back" bindtap="goBack">
+      <text class="nav-icon">‹</text>
+      <text class="nav-text">返回</text>
+    </view>
+    <text class="nav-title">账户安全</text>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <!-- 安全概览 -->
+  <view class="security-overview">
+    <view class="security-header">
+      <text class="security-title">账户安全</text>
+      <text class="security-subtitle">保护您的账户安全，防止未经授权的访问</text>
+    </view>
+    
+    <view class="security-score">
+      <view class="score-circle">
+        <text class="score-value">85</text>
+        <text class="score-label">安全评分</text>
+      </view>
+      <view class="score-tips">
+        <text class="tip-item">✅ 强密码</text>
+        <text class="tip-item">🔒 定期修改</text>
+        <text class="tip-item">{{securitySettings.twoFactorEnabled ? '✅' : '⚠️'}} 双重验证</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 密码安全 -->
+  <view class="security-section">
+    <view class="section-header">
+      <text class="section-title">密码安全</text>
+      <text class="section-subtitle">上次修改：{{securitySettings.passwordChangedAt}}</text>
+    </view>
+    
+    <view class="security-card">
+      <view class="security-item">
+        <view class="item-info">
+          <text class="item-icon">🔑</text>
+          <view class="item-details">
+            <text class="item-title">修改密码</text>
+            <text class="item-desc">定期更新密码提高安全性</text>
+          </view>
+        </view>
+        <button class="action-btn" bindtap="togglePasswordForm">
+          {{showPasswordForm ? '取消' : '修改'}}
+        </button>
+      </view>
+
+      <!-- 密码修改表单 -->
+      <view wx:if="{{showPasswordForm}}" class="password-form">
+        <view class="form-group">
+          <text class="form-label">当前密码</text>
+          <input 
+            class="form-input" 
+            type="password" 
+            placeholder="请输入当前密码"
+            value="{{passwordForm.currentPassword}}"
+            data-field="currentPassword"
+            bindinput="onPasswordInput"
+          />
+        </view>
+        
+        <view class="form-group">
+          <text class="form-label">新密码</text>
+          <input 
+            class="form-input" 
+            type="password" 
+            placeholder="请输入新密码（至少6位）"
+            value="{{passwordForm.newPassword}}"
+            data-field="newPassword"
+            bindinput="onPasswordInput"
+          />
+        </view>
+        
+        <view class="form-group">
+          <text class="form-label">确认密码</text>
+          <input 
+            class="form-input" 
+            type="password" 
+            placeholder="请再次输入新密码"
+            value="{{passwordForm.confirmPassword}}"
+            data-field="confirmPassword"
+            bindinput="onPasswordInput"
+          />
+        </view>
+        
+        <button 
+          class="primary-btn" 
+          loading="{{isLoading}}"
+          bindtap="changePassword"
+        >
+          确认修改
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 双重验证 -->
+  <view class="security-section">
+    <view class="section-header">
+      <text class="section-title">双重验证</text>
+      <text class="section-subtitle">开启后需要验证码登录</text>
+    </view>
+    
+    <view class="security-card">
+      <view class="security-item">
+        <view class="item-info">
+          <text class="item-icon">🔐</text>
+          <view class="item-details">
+            <text class="item-title">双重验证</text>
+            <text class="item-desc">
+              {{securitySettings.twoFactorEnabled ? '已开启' : '未开启'}}
+            </text>
+          </view>
+        </view>
+        <switch 
+          checked="{{securitySettings.twoFactorEnabled}}"
+          bindchange="toggleTwoFactor"
+        />
+      </view>
+
+      <!-- 双重验证设置 -->
+      <view wx:if="{{showTwoFactorSetup}}" class="two-factor-setup">
+        <view class="setup-step">
+          <text class="step-number">1</text>
+          <text class="step-text">扫描二维码或手动输入密钥</text>
+        </view>
+        
+        <view class="qr-code-placeholder">
+          <text class="qr-text">[二维码区域]</text>
+          <text class="qr-desc">使用身份验证器应用扫描</text>
+        </view>
+        
+        <view class="setup-step">
+          <text class="step-number">2</text>
+          <text class="step-text">输入验证码</text>
+        </view>
+        
+        <input 
+          class="code-input" 
+          placeholder="请输入6位验证码"
+          value="{{twoFactorCode}}"
+          bindinput="onTwoFactorCodeInput"
+          maxlength="6"
+        />
+        
+        <view class="setup-step">
+          <text class="step-number">3</text>
+          <text class="step-text">保存备份代码</text>
+        </view>
+        
+        <view class="backup-codes">
+          <block wx:for="{{backupCodes}}" wx:key="index">
+            <text class="backup-code">{{item}}</text>
+          </block>
+        </view>
+        
+        <view class="setup-actions">
+          <button class="secondary-btn" bindtap="cancelTwoFactorSetup">取消</button>
+          <button 
+            class="primary-btn" 
+            loading="{{isLoading}}"
+            bindtap="enableTwoFactor"
+          >
+            启用验证
+          </button>
+        </view>
+      </view>
+
+      <view wx:if="{{securitySettings.twoFactorEnabled}}" class="two-factor-actions">
+        <button class="secondary-btn" bindtap="exportBackupCodes">导出备份代码</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 登录设备管理 -->
+  <view class="security-section">
+    <view class="section-header">
+      <text class="section-title">登录设备</text>
+      <text class="section-subtitle">管理已登录的设备</text>
+    </view>
+    
+    <view class="security-card">
+      <block wx:for="{{securitySettings.loginDevices}}" wx:key="index">
+        <view class="device-item {{item.active ? 'active' : ''}}">
+          <view class="device-info">
+            <text class="device-icon">📱</text>
+            <view class="device-details">
+              <text class="device-name">{{item.device}}</text>
+              <text class="device-location">{{item.location}} · {{item.time}}</text>
+            </view>
+          </view>
+          <view class="device-actions">
+            <text wx:if="{{item.active}}" class="device-status">当前设备</text>
+            <text 
+              wx:else 
+              class="logout-btn" 
+              data-index="{{index}}"
+              bindtap="logoutDevice"
+            >
+              退出登录
+            </text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 安全问答 -->
+  <view class="security-section">
+    <view class="section-header">
+      <text class="section-title">安全问答</text>
+      <text class="section-subtitle">用于账户恢复</text>
+    </view>
+    
+    <view class="security-card">
+      <block wx:for="{{securitySettings.securityQuestions}}" wx:key="index">
+        <view class="question-item">
+          <view class="question-info">
+            <text class="question-icon">{{item.answered ? '✅' : '❓'}}</text>
+            <view class="question-details">
+              <text class="question-text">{{item.question}}</text>
+              <text class="question-status">
+                {{item.answered ? '已设置' : '未设置'}}
+              </text>
+            </view>
+          </view>
+          <button 
+            wx:if="{{!item.answered}}" 
+            class="setup-btn"
+            bindtap="setupSecurityQuestion"
+          >
+            设置
+          </button>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 安全提示 -->
+  <view class="security-tips">
+    <view class="tips-header">
+      <text class="tips-title">安全提示</text>
+    </view>
+    <view class="tips-content">
+      <text class="tip">• 定期修改密码，避免使用简单密码</text>
+      <text class="tip">• 开启双重验证提高账户安全性</text>
+      <text class="tip">• 不要在公共设备上保存登录信息</text>
+      <text class="tip">• 及时退出不常用的登录设备</text>
+    </view>
+  </view>
+</view>

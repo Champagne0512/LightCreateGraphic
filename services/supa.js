@@ -119,6 +119,195 @@ class SupabaseService {
   async saveUserWork(workData) { return { success: true, id: `work-${Date.now()}` }; }
   async getUserWorks(userId) { return []; }
 
+  // ===== Profile RPCs =====
+  async getUserProfileById(userId) {
+    if (!this.enabled()) {
+      return { success: true, user: { id: userId || `mock-${Date.now()}`, phone: '13800000000', name: '用户', nickname: '用户', avatar_url: '', bio: '', location: '', website: '', member_status: false } };
+    }
+    try {
+      const data = await this.wxRpc('get_user_profile', { p_user_id: userId });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '获取用户信息失败' }; }
+  }
+
+  async updateUserProfile(payload) {
+    if (!this.enabled()) {
+      return { success: true, user: payload };
+    }
+    try {
+      const data = await this.wxRpc('update_user_profile', payload);
+      return data;
+    } catch (e) { return { success: false, message: e.message || '更新失败' }; }
+  }
+
+  async getUserStats(userId, clientUid) {
+    if (!this.enabled()) {
+      return { success: true, stats: { drafts: 0, works: 0, favorites: 0 } };
+    }
+    try {
+      const data = await this.wxRpc('get_user_stats', { p_user_id: userId, p_client_uid: clientUid || null });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '获取统计失败' }; }
+  }
+
+  // ===== Security Settings =====
+  async updatePassword(userId, oldPassword, newPassword) {
+    if (!this.enabled()) {
+      return { success: true, message: '密码更新成功' };
+    }
+    try {
+      const data = await this.wxRpc('update_user_password', { 
+        p_user_id: userId, 
+        p_old_password: oldPassword, 
+        p_new_password: newPassword 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '密码更新失败' }; }
+  }
+
+  async enableTwoFactorAuth(userId) {
+    if (!this.enabled()) {
+      return { success: true, message: '双重验证已开启', qrCode: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xMDAgNTBoMjV2MjVoLTI1eiIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==' };
+    }
+    try {
+      const data = await this.wxRpc('enable_two_factor_auth', { p_user_id: userId });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '开启双重验证失败' }; }
+  }
+
+  async disableTwoFactorAuth(userId, code) {
+    if (!this.enabled()) {
+      return { success: true, message: '双重验证已关闭' };
+    }
+    try {
+      const data = await this.wxRpc('disable_two_factor_auth', { 
+        p_user_id: userId, 
+        p_code: code 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '关闭双重验证失败' }; }
+  }
+
+  // ===== Notifications Management =====
+  async getUserNotifications(userId, page = 1, pageSize = 20) {
+    if (!this.enabled()) {
+      return { success: true, notifications: [], total: 0 };
+    }
+    try {
+      const data = await this.wxRpc('get_user_notifications', { 
+        p_user_id: userId, 
+        p_page: page, 
+        p_page_size: pageSize 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '获取通知失败' }; }
+  }
+
+  async markNotificationAsRead(userId, notificationId) {
+    if (!this.enabled()) {
+      return { success: true, message: '标记成功' };
+    }
+    try {
+      const data = await this.wxRpc('mark_notification_read', { 
+        p_user_id: userId, 
+        p_notification_id: notificationId 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '标记失败' }; }
+  }
+
+  async deleteNotification(userId, notificationId) {
+    if (!this.enabled()) {
+      return { success: true, message: '删除成功' };
+    }
+    try {
+      const data = await this.wxRpc('delete_notification', { 
+        p_user_id: userId, 
+        p_notification_id: notificationId 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '删除失败' }; }
+  }
+
+  // ===== Privacy Settings =====
+  async getPrivacySettings(userId) {
+    if (!this.enabled()) {
+      return { success: true, settings: {
+        profile_visible: true,
+        works_visible: true,
+        show_online_status: true,
+        data_collection: true,
+        marketing_emails: false
+      } };
+    }
+    try {
+      const data = await this.wxRpc('get_privacy_settings', { p_user_id: userId });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '获取隐私设置失败' }; }
+  }
+
+  async updatePrivacySettings(userId, settings) {
+    if (!this.enabled()) {
+      return { success: true, message: '隐私设置已更新' };
+    }
+    try {
+      const data = await this.wxRpc('update_privacy_settings', { 
+        p_user_id: userId, 
+        p_settings: settings 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '更新隐私设置失败' }; }
+  }
+
+  // ===== Extended Statistics =====
+  async getUserExtendedStats(userId, timeRange = 'week') {
+    if (!this.enabled()) {
+      return { success: true, stats: {
+        templates: { current: 25, total: 47, trend: 'up' },
+        downloads: { current: 156, total: 892, trend: 'up' },
+        views: { current: 1250, total: 4780, trend: 'up' },
+        memberDays: { current: 30, total: 120, trend: 'stable' }
+      } };
+    }
+    try {
+      const data = await this.wxRpc('get_user_extended_stats', { 
+        p_user_id: userId, 
+        p_time_range: timeRange 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '获取扩展统计失败' }; }
+  }
+
+  async getStatisticsChartData(userId, timeRange = 'week') {
+    if (!this.enabled()) {
+      return { success: true, chartData: [
+        { date: '11-11', works: 3, favorites: 5, downloads: 12 },
+        { date: '11-12', works: 5, favorites: 8, downloads: 18 },
+        { date: '11-13', works: 7, favorites: 12, downloads: 25 },
+        { date: '11-14', works: 6, favorites: 10, downloads: 20 },
+        { date: '11-15', works: 8, favorites: 15, downloads: 30 },
+        { date: '11-16', works: 10, favorites: 18, downloads: 35 },
+        { date: '11-17', works: 12, favorites: 22, downloads: 40 }
+      ] };
+    }
+    try {
+      const data = await this.wxRpc('get_statistics_chart_data', { 
+        p_user_id: userId, 
+        p_time_range: timeRange 
+      });
+      return data;
+    } catch (e) { return { success: false, message: e.message || '获取图表数据失败' }; }
+  }
+
+  async listWorks(clientUid, userId = null, limit = 50) {
+    if (!this.enabled()) return [];
+    const params = [];
+    if (userId) params.push(`user_id=eq.${encodeURIComponent(userId)}`);
+    if (clientUid) params.push(`client_uid=eq.${encodeURIComponent(clientUid)}`);
+    const query = `?select=work_id,work_name,scene_type,template_id,created_at&order=created_at.desc&limit=${limit}` + (params.length?`&${params.join('&')}`:'');
+    try { return await this.wxRest(`/rest/v1/works${query}`); } catch { return []; }
+  }
+
   // Mock data
   getMockTemplates(category = null) {
     const templates = [
@@ -155,6 +344,21 @@ module.exports = {
   getDashboardStats: () => supabaseService.getDashboardStats(),
   getUsers: (filter) => supabaseService.getUsers(filter),
   saveUserWork: (workData) => supabaseService.saveUserWork(workData),
-  getUserWorks: (userId) => supabaseService.getUserWorks(userId)
+  getUserWorks: (userId) => supabaseService.getUserWorks(userId),
+  listWorks: (clientUid, userId, limit) => supabaseService.listWorks(clientUid, userId, limit),
+  getUserProfileById: (userId) => supabaseService.getUserProfileById(userId),
+  updateUserProfile: (payload) => supabaseService.updateUserProfile(payload),
+  getUserStats: (userId, clientUid) => supabaseService.getUserStats(userId, clientUid),
+  
+  // 新增的用户中心相关API
+  updatePassword: (userId, oldPassword, newPassword) => supabaseService.updatePassword(userId, oldPassword, newPassword),
+  enableTwoFactorAuth: (userId) => supabaseService.enableTwoFactorAuth(userId),
+  disableTwoFactorAuth: (userId, code) => supabaseService.disableTwoFactorAuth(userId, code),
+  getUserNotifications: (userId, page, pageSize) => supabaseService.getUserNotifications(userId, page, pageSize),
+  markNotificationAsRead: (userId, notificationId) => supabaseService.markNotificationAsRead(userId, notificationId),
+  deleteNotification: (userId, notificationId) => supabaseService.deleteNotification(userId, notificationId),
+  getPrivacySettings: (userId) => supabaseService.getPrivacySettings(userId),
+  updatePrivacySettings: (userId, settings) => supabaseService.updatePrivacySettings(userId, settings),
+  getUserExtendedStats: (userId, timeRange) => supabaseService.getUserExtendedStats(userId, timeRange),
+  getStatisticsChartData: (userId, timeRange) => supabaseService.getStatisticsChartData(userId, timeRange)
 };
-

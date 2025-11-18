@@ -17,7 +17,15 @@ create table if not exists public.app_users (
   phone text unique not null,
   password_hash text not null,
   name text,
+  nickname text,
   avatar_url text,
+  bio text,
+  location text,
+  website text,
+  banner_url text,
+  settings jsonb default '{}'::jsonb,
+  member_status boolean default false,
+  member_expire_time timestamptz,
   role text default 'user' check (role in ('user','admin')),
   status text default 'active' check (status in ('active','inactive','banned')),
   last_login timestamptz,
@@ -182,6 +190,119 @@ end; $$;
 
 revoke all on function public.login_user(text, text) from public;
 grant execute on function public.login_user(text, text) to anon, authenticated;
+
+-- 获取用户资料（SECURITY DEFINER 绕过 RLS，仅返回可公开字段）
+create or replace function public.get_user_profile(p_user_id uuid)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare v public.app_users;
+begin
+  select * into v from public.app_users where id = p_user_id limit 1;
+  if not found then
+    return json_build_object('success', false, 'message', '用户不存在');
+  end if;
+  return json_build_object('success', true, 'user', json_build_object(
+    'id', v.id,
+    'phone', v.phone,
+    'name', coalesce(v.name,''),
+    'nickname', coalesce(v.nickname,''),
+    'avatar_url', coalesce(v.avatar_url,''),
+    'bio', coalesce(v.bio,''),
+    'location', coalesce(v.location,''),
+    'website', coalesce(v.website,''),
+    'banner_url', coalesce(v.banner_url,''),
+    'member_status', v.member_status,
+    'member_expire_time', v.member_expire_time,
+    'role', v.role,
+    'status', v.status,
+    'created_at', v.created_at
+  ));
+end; $$;
+
+revoke all on function public.get_user_profile(uuid) from public;
+grant execute on function public.get_user_profile(uuid) to anon, authenticated;
+
+-- 更新用户资料（限制允许更新的列）
+create or replace function public.update_user_profile(
+  p_user_id uuid,
+  p_name text default null,
+  p_nickname text default null,
+  p_avatar_url text default null,
+  p_bio text default null,
+  p_location text default null,
+  p_website text default null,
+  p_banner_url text default null
+)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare v public.app_users;
+begin
+  update public.app_users set
+    name = coalesce(p_name, name),
+    nickname = coalesce(p_nickname, nickname),
+    avatar_url = coalesce(p_avatar_url, avatar_url),
+    bio = coalesce(p_bio, bio),
+    location = coalesce(p_location, location),
+    website = coalesce(p_website, website),
+    banner_url = coalesce(p_banner_url, banner_url),
+    updated_at = now()
+  where id = p_user_id
+  returning * into v;
+
+  if not found then
+    return json_build_object('success', false, 'message', '用户不存在');
+  end if;
+
+  return json_build_object('success', true, 'user', json_build_object(
+    'id', v.id,
+    'phone', v.phone,
+    'name', coalesce(v.name,''),
+    'nickname', coalesce(v.nickname,''),
+    'avatar_url', coalesce(v.avatar_url,''),
+    'bio', coalesce(v.bio,''),
+    'location', coalesce(v.location,''),
+    'website', coalesce(v.website,''),
+    'banner_url', coalesce(v.banner_url,''),
+    'member_status', v.member_status,
+    'member_expire_time', v.member_expire_time
+  ));
+end; $$;
+
+revoke all on function public.update_user_profile(uuid, text, text, text, text, text, text, text) from public;
+grant execute on function public.update_user_profile(uuid, text, text, text, text, text, text, text) to anon, authenticated;
+
+-- 用户统计（作品/收藏）
+create table if not exists public.user_favorites (
+  id uuid primary key default extensions.gen_random_uuid(),
+  user_id uuid references public.app_users(id) on delete cascade,
+  template_id text references public.templates(template_id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+alter table public.user_favorites enable row level security;
+do $$ begin
+  create policy user_favorites_select_all on public.user_favorites for select using (true);
+exception when duplicate_object then null; end $$;
+
+create or replace function public.get_user_stats(p_user_id uuid, p_client_uid text default null)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare v_works int; v_fav int;
+begin
+  if p_user_id is not null then
+    select count(*) into v_works from public.works where user_id = p_user_id;
+  else
+    select count(*) into v_works from public.works where client_uid = p_client_uid;
+  end if;
+
+  if p_user_id is not null then
+    select count(*) into v_fav from public.user_favorites where user_id = p_user_id;
+  else
+    v_fav := 0;
+  end if;
+
+  return json_build_object('success', true, 'stats', json_build_object('works', coalesce(v_works,0), 'favorites', coalesce(v_fav,0)));
+end; $$;
+
+revoke all on function public.get_user_stats(uuid, text) from public;
+grant execute on function public.get_user_stats(uuid, text) to anon, authenticated;
 
 -- =============================================
 -- 最小示例数据（可多次执行）

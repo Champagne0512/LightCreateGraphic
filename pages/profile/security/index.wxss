@@ -1,0 +1,510 @@
+/* Security page styles */
+
+.security-container {
+  padding: 0;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 导航栏 */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  padding: 20rpx 32rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-back {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 0;
+}
+
+.nav-icon {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-right: 8rpx;
+}
+
+.nav-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.nav-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  flex: 1;
+}
+
+.nav-placeholder {
+  width: 100rpx;
+}
+
+/* Security Overview */
+.security-overview {
+  background: linear-gradient(135deg, #1677FF 0%, #36CFC9 100%);
+  padding: 40rpx 32rpx;
+  color: white;
+}
+
+.security-header {
+  margin-bottom: 30rpx;
+}
+
+.security-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.security-subtitle {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.security-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.score-circle {
+  text-align: center;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 120rpx;
+  height: 120rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.score-value {
+  font-size: 32rpx;
+  font-weight: 700;
+  display: block;
+}
+
+.score-label {
+  font-size: 20rpx;
+  opacity: 0.9;
+}
+
+.score-tips {
+  flex: 1;
+  margin-left: 30rpx;
+}
+
+.tip-item {
+  display: block;
+  font-size: 24rpx;
+  margin-bottom: 8rpx;
+  opacity: 0.9;
+}
+
+/* Sections */
+.security-section {
+  padding: 24rpx 32rpx;
+}
+
+.section-header {
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.section-subtitle {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* Security Cards */
+.security-card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+  border: 1rpx solid #f0f0f0;
+}
+
+.security-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.security-item:not(:last-child) {
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.item-icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+  width: 40rpx;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.item-desc {
+  font-size: 22rpx;
+  color: #999;
+  display: block;
+}
+
+.action-btn {
+  background: #1677FF;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+  min-width: 120rpx;
+}
+
+/* Password Form */
+.password-form {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.form-group {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  font-size: 24rpx;
+  color: #333;
+  display: block;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #e8e8e8;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+  background: #fafafa;
+}
+
+.primary-btn {
+  width: 100%;
+  height: 80rpx;
+  background: #1677FF;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-top: 8rpx;
+}
+
+.secondary-btn {
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  border-radius: 8rpx;
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+  margin-right: 12rpx;
+}
+
+/* Two Factor Setup */
+.two-factor-setup {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.setup-step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.step-number {
+  background: #1677FF;
+  color: white;
+  border-radius: 50%;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: 600;
+  margin-right: 12rpx;
+}
+
+.step-text {
+  font-size: 24rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.qr-code-placeholder {
+  background: #f8f9fa;
+  border: 2rpx dashed #ddd;
+  border-radius: 12rpx;
+  padding: 40rpx;
+  text-align: center;
+  margin: 20rpx 0;
+}
+
+.qr-text {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.qr-desc {
+  font-size: 20rpx;
+  color: #ccc;
+}
+
+.code-input {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #e8e8e8;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 32rpx;
+  text-align: center;
+  letter-spacing: 8rpx;
+  background: #fafafa;
+  margin: 20rpx 0;
+}
+
+.backup-codes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12rpx;
+  margin: 20rpx 0;
+}
+
+.backup-code {
+  background: #f8f9fa;
+  border: 1rpx solid #e8e8e8;
+  border-radius: 6rpx;
+  padding: 16rpx;
+  text-align: center;
+  font-size: 20rpx;
+  font-family: monospace;
+  color: #333;
+}
+
+.setup-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24rpx;
+}
+
+.two-factor-actions {
+  margin-top: 16rpx;
+  text-align: center;
+}
+
+/* Device Management */
+.device-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.device-item:not(:last-child) {
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.device-item.active {
+  background: #f8fdff;
+  margin: -24rpx -24rpx 0 -24rpx;
+  padding: 20rpx 24rpx;
+}
+
+.device-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.device-icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+}
+
+.device-details {
+  flex: 1;
+}
+
+.device-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.device-location {
+  font-size: 22rpx;
+  color: #999;
+  display: block;
+}
+
+.device-actions {
+  text-align: right;
+}
+
+.device-status {
+  font-size: 22rpx;
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.logout-btn {
+  color: #ff4d4f;
+  font-size: 22rpx;
+  background: rgba(255, 77, 79, 0.1);
+  padding: 8rpx 16rpx;
+  border-radius: 6rpx;
+}
+
+/* Security Questions */
+.question-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.question-item:not(:last-child) {
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.question-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.question-icon {
+  font-size: 24rpx;
+  margin-right: 16rpx;
+}
+
+.question-details {
+  flex: 1;
+}
+
+.question-text {
+  font-size: 24rpx;
+  color: #333;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.question-status {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.setup-btn {
+  background: #1677FF;
+  color: white;
+  border: none;
+  border-radius: 6rpx;
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+}
+
+/* Security Tips */
+.security-tips {
+  background: white;
+  margin: 24rpx 32rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.tips-header {
+  margin-bottom: 16rpx;
+}
+
+.tips-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.tips-content {
+  padding-left: 20rpx;
+}
+
+.tip {
+  display: block;
+  font-size: 22rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 750rpx) {
+  .security-section {
+    padding: 20rpx 24rpx;
+  }
+  
+  .security-overview {
+    padding: 32rpx 24rpx;
+  }
+  
+  .security-card {
+    padding: 20rpx;
+  }
+  
+  .backup-codes {
+    grid-template-columns: 1fr;
+  }
+  
+  .security-tips {
+    margin: 20rpx 24rpx;
+  }
+}

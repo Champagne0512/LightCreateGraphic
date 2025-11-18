@@ -1,0 +1,159 @@
+<!--pages/profile/statistics/index.wxml-->
+<view class="container">
+  <!-- 导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-back" bindtap="goBack">
+      <text class="nav-icon">‹</text>
+      <text class="nav-text">返回</text>
+    </view>
+    <text class="nav-title">数据统计</text>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <!-- 标题栏 -->
+  <view class="header">
+    <view class="title">数据统计</view>
+    <view class="subtitle">查看您的创作数据和分析</view>
+  </view>
+
+  <!-- 时间范围选择器 -->
+  <view class="time-range-selector">
+    <view 
+      class="range-item {{timeRange === 'week' ? 'active' : ''}}"
+      data-range="week"
+      bindtap="changeTimeRange"
+    >
+      周
+    </view>
+    <view 
+      class="range-item {{timeRange === 'month' ? 'active' : ''}}"
+      data-range="month"
+      bindtap="changeTimeRange"
+    >
+      月
+    </view>
+    <view 
+      class="range-item {{timeRange === 'year' ? 'active' : ''}}"
+      data-range="year"
+      bindtap="changeTimeRange"
+    >
+      年
+    </view>
+  </view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-grid">
+    <view class="stat-card" data-type="works" bindtap="viewDetail">
+      <view class="stat-value">{{stats.works.current}}</view>
+      <view class="stat-label">作品数量</view>
+      <view class="stat-trend {{stats.works.trend}}">
+        {{stats.works.trend === 'up' ? '↑' : stats.works.trend === 'down' ? '↓' : '→'}}
+      </view>
+    </view>
+    
+    <view class="stat-card" data-type="favorites" bindtap="viewDetail">
+      <view class="stat-value">{{stats.favorites.current}}</view>
+      <view class="stat-label">收藏数量</view>
+      <view class="stat-trend {{stats.favorites.trend}}">
+        {{stats.favorites.trend === 'up' ? '↑' : stats.favorites.trend === 'down' ? '↓' : '→'}}
+      </view>
+    </view>
+    
+    <view class="stat-card" data-type="templates" bindtap="viewDetail">
+      <view class="stat-value">{{stats.templates.current}}</view>
+      <view class="stat-label">模板使用</view>
+      <view class="stat-trend {{stats.templates.trend}}">
+        {{stats.templates.trend === 'up' ? '↑' : stats.templates.trend === 'down' ? '↓' : '→'}}
+      </view>
+    </view>
+    
+    <view class="stat-card" data-type="downloads" bindtap="viewDetail">
+      <view class="stat-value">{{stats.downloads.current}}</view>
+      <view class="stat-label">下载次数</view>
+      <view class="stat-trend {{stats.downloads.trend}}">
+        {{stats.downloads.trend === 'up' ? '↑' : stats.downloads.trend === 'down' ? '↓' : '→'}}
+      </view>
+    </view>
+    
+    <view class="stat-card" data-type="views" bindtap="viewDetail">
+      <view class="stat-value">{{stats.views.current}}</view>
+      <view class="stat-label">浏览总量</view>
+      <view class="stat-trend {{stats.views.trend}}">
+        {{stats.views.trend === 'up' ? '↑' : stats.views.trend === 'down' ? '↓' : '→'}}
+      </view>
+    </view>
+    
+    <view class="stat-card" data-type="memberDays" bindtap="viewDetail">
+      <view class="stat-value">{{stats.memberDays.current}}</view>
+      <view class="stat-label">会员天数</view>
+      <view class="stat-trend {{stats.memberDays.trend}}">
+        {{stats.memberDays.trend === 'up' ? '↑' : stats.memberDays.trend === 'down' ? '↓' : '→'}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据图表区域 -->
+  <view class="chart-section">
+    <view class="section-title">数据趋势</view>
+    <view class="chart-container">
+      <!-- 简单的条形图模拟 -->
+      <view class="bar-chart">
+        <view class="chart-bars">
+          <view 
+            class="chart-bar" 
+            wx:for="{{chartData}}" 
+            wx:key="date"
+            style="height: {{item.works * 5}}rpx;"
+          >
+            <view class="bar-value">{{item.works}}</view>
+            <view class="bar-label">{{item.date}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计详情 -->
+  <view class="detail-section">
+    <view class="section-title">统计详情</view>
+    <view class="detail-list">
+      <view class="detail-item">
+        <view class="detail-label">作品总数</view>
+        <view class="detail-value">{{stats.works.total}}</view>
+      </view>
+      <view class="detail-item">
+        <view class="detail-label">收藏总数</view>
+        <view class="detail-value">{{stats.favorites.total}}</view>
+      </view>
+      <view class="detail-item">
+        <view class="detail-label">模板使用次数</view>
+        <view class="detail-value">{{stats.templates.total}}</view>
+      </view>
+      <view class="detail-item">
+        <view class="detail-label">总下载量</view>
+        <view class="detail-value">{{stats.downloads.total}}</view>
+      </view>
+      <view class="detail-item">
+        <view class="detail-label">总浏览量</view>
+        <view class="detail-value">{{stats.views.total}}</view>
+      </view>
+      <view class="detail-item">
+        <view class="detail-label">累计会员天数</view>
+        <view class="detail-value">{{stats.memberDays.total}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button class="export-btn" bindtap="exportStatistics">导出数据</button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{isLoading}}" class="loading-mask">
+    <view class="loading-content">
+      <view class="loading-spinner"></view>
+      <text>加载中...</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,158 @@
+<!--pages/profile/privacy/index.wxml-->
+<view class="container">
+  <!-- 导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-back" bindtap="goBack">
+      <text class="nav-icon">‹</text>
+      <text class="nav-text">返回</text>
+    </view>
+    <text class="nav-title">隐私设置</text>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <!-- 标题栏 -->
+  <view class="header">
+    <view class="title">隐私设置</view>
+    <view class="subtitle">管理您的隐私偏好和数据设置</view>
+  </view>
+
+  <!-- 设置状态 -->
+  <view wx:if="{{saved}}" class="saved-indicator">
+    <view class="saved-icon">✓</view>
+    <text class="saved-text">设置已保存</text>
+  </view>
+
+  <!-- 隐私设置卡片 -->
+  <view class="settings-section">
+    <view class="section-title">个人信息可见性</view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-label">个人资料公开</view>
+        <view class="setting-desc">允许其他用户查看您的个人资料</view>
+      </view>
+      <switch 
+        checked="{{settings.profile_visible}}" 
+        data-setting="profile_visible"
+        bindchange="toggleSetting"
+        color="#007bff"
+      />
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-label">作品公开</view>
+        <view class="setting-desc">允许其他用户查看您的创作作品</view>
+      </view>
+      <switch 
+        checked="{{settings.works_visible}}" 
+        data-setting="works_visible"
+        bindchange="toggleSetting"
+        color="#007bff"
+      />
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-label">在线状态显示</view>
+        <view class="setting-desc">向其他用户显示您的在线状态</view>
+      </view>
+      <switch 
+        checked="{{settings.show_online_status}}" 
+        data-setting="show_online_status"
+        bindchange="toggleSetting"
+        color="#007bff"
+      />
+    </view>
+  </view>
+
+  <!-- 数据收集设置 -->
+  <view class="settings-section">
+    <view class="section-title">数据收集与使用</view>
+    
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-label">数据收集</view>
+        <view class="setting-desc">允许我们收集匿名使用数据以改进服务</view>
+      </view>
+      <switch 
+        checked="{{settings.data_collection}}" 
+        data-setting="data_collection"
+        bindchange="toggleSetting"
+        color="#007bff"
+      />
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-label">营销邮件</view>
+        <view class="setting-desc">接收产品更新和营销推广信息</view>
+      </view>
+      <switch 
+        checked="{{settings.marketing_emails}}" 
+        data-setting="marketing_emails"
+        bindchange="toggleSetting"
+        color="#007bff"
+      />
+    </view>
+
+    <view class="setting-item">
+      <view class="setting-info">
+        <view class="setting-label">个性化广告</view>
+        <view class="setting-desc">基于您的兴趣显示相关广告内容</view>
+      </view>
+      <switch 
+        checked="{{settings.personalized_ads}}" 
+        data-setting="personalized_ads"
+        bindchange="toggleSetting"
+        color="#007bff"
+      />
+    </view>
+  </view>
+
+  <!-- 数据管理 -->
+  <view class="settings-section">
+    <view class="section-title">数据管理</view>
+    
+    <view class="action-item" bindtap="viewPrivacyPolicy">
+      <view class="action-icon">📄</view>
+      <view class="action-content">
+        <view class="action-label">查看隐私政策</view>
+        <view class="action-desc">了解我们如何保护您的隐私</view>
+      </view>
+      <view class="action-arrow">›</view>
+    </view>
+
+    <view class="action-item" bindtap="exportPersonalData">
+      <view class="action-icon">📤</view>
+      <view class="action-content">
+        <view class="action-label">导出个人数据</view>
+        <view class="action-desc">下载您的所有个人数据</view>
+      </view>
+      <view class="action-arrow">›</view>
+    </view>
+
+    <view class="action-item danger" bindtap="deleteAccountData">
+      <view class="action-icon">🗑️</view>
+      <view class="action-content">
+        <view class="action-label">删除账户数据</view>
+        <view class="action-desc">永久删除所有个人数据</view>
+      </view>
+      <view class="action-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button class="secondary-btn" bindtap="resetToDefault">重置为默认</button>
+    <button class="primary-btn" bindtap="saveSettings">保存设置</button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{isLoading}}" class="loading-mask">
+    <view class="loading-content">
+      <view class="loading-spinner"></view>
+      <text>加载中...</text>
+    </view>
+  </view>
+</view>
