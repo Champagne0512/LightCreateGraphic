@@ -8,6 +8,7 @@
   --creative-purple: #8B5CF6;
   --creative-orange: #F59E0B;
   --creative-green: #10B981;
+  --creative-red: #EF4444;
   --bg-light: #F8FAFC;
   --bg-card: #FFFFFF;
   --text-primary: #1F2937;
