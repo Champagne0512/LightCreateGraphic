@@ -28,7 +28,7 @@
     
     <view class="setting-item">
       <view class="setting-info">
-        <view class="setting-label">个人资料公开</view>
+        <view class="setting-label">个人资料公开始</view>
         <view class="setting-desc">允许其他用户查看您的个人资料</view>
       </view>
       <switch 
@@ -41,7 +41,7 @@
 
     <view class="setting-item">
       <view class="setting-info">
-        <view class="setting-label">作品公开</view>
+        <view class="setting-label">作品公开始</view>
         <view class="setting-desc">允许其他用户查看您的创作作品</view>
       </view>
       <switch 

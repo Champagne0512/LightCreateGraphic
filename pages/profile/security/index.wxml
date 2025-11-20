@@ -19,7 +19,7 @@
     <view class="security-score">
       <view class="score-circle">
         <text class="score-value">85</text>
-        <text class="score-label">安全评分</text>
+        <text class="score-label">安全评分享</text>
       </view>
       <view class="score-tips">
         <text class="tip-item">✅ 强密码</text>
@@ -33,7 +33,7 @@
   <view class="security-section">
     <view class="section-header">
       <text class="section-title">密码安全</text>
-      <text class="section-subtitle">上次修改：{{securitySettings.passwordChangedAt}}</text>
+      <text class="section-subtitle">上手次修改：{{securitySettings.passwordChangedAt}}</text>
     </view>
     
     <view class="security-card">
@@ -103,7 +103,7 @@
   <view class="security-section">
     <view class="section-header">
       <text class="section-title">双重验证</text>
-      <text class="section-subtitle">开启后需要验证码登录</text>
+      <text class="section-subtitle">开始启后需要验证码登录</text>
     </view>
     
     <view class="security-card">
@@ -113,7 +113,7 @@
           <view class="item-details">
             <text class="item-title">双重验证</text>
             <text class="item-desc">
-              {{securitySettings.twoFactorEnabled ? '已开启' : '未开启'}}
+              {{securitySettings.twoFactorEnabled ? '已开始启' : '未开始启'}}
             </text>
           </view>
         </view>
@@ -248,8 +248,8 @@
     </view>
     <view class="tips-content">
       <text class="tip">• 定期修改密码，避免使用简单密码</text>
-      <text class="tip">• 开启双重验证提高账户安全性</text>
-      <text class="tip">• 不要在公共设备上保存登录信息</text>
+      <text class="tip">• 开始启双重验证提高账户安全性</text>
+      <text class="tip">• 不要在公共设备上手保存登录信息</text>
       <text class="tip">• 及时退出不常用的登录设备</text>
     </view>
   </view>

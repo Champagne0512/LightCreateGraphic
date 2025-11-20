@@ -1,44 +1,49 @@
 {
-  "pages": [
-    "pages/auth/login",
-    "pages/auth/register",
-    "pages/index/index",
-    "pages/templates/list",
-    "pages/editor/index",
-    "pages/export/index",
-    "pages/onboarding/index",
-    "pages/profile/index",
-    "pages/profile/security/index",
-    "pages/profile/statistics/index",
-    "pages/profile/notifications/index",
-    "pages/profile/privacy/index",
-    "pages/admin/dashboard",
-    "pages/admin/templates",
-    "pages/admin/users"
-  ],
-  "window": {
-    "navigationBarTitleText": "轻创图文",
-    "navigationBarBackgroundColor": "#1677FF",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#f7f8fa",
-    "backgroundTextStyle": "dark"
-  },
-  "tabBar": {
-    "color": "#666",
-    "selectedColor": "#1677FF",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
-    "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "创作"
-      },
-      {
-        "pagePath": "pages/profile/index",
-        "text": "我的"
-      }
-    ]
-  },
-  "sitemapLocation": "sitemap.json"
+    "pages":  [
+                  "pages/index/index",
+                  "pages/auth/login",
+                  "pages/auth/register",
+                  "pages/templates/list",
+                  "pages/templates/index",
+                  "pages/editor/index",
+                  "pages/export/index",
+                  "pages/profile/index",
+                  "pages/profile/security/index",
+                  "pages/profile/statistics/index",
+                  "pages/profile/notifications/index",
+                  "pages/profile/privacy/index",
+                  "pages/drafts/index",
+                  "pages/drafts/versions/index",
+                  "pages/admin/dashboard",
+                  "pages/admin/templates",
+                  "pages/admin/users"
+              ],
+    "window":  {
+                   "navigationBarTitleText":  "轻创图文",
+                   "navigationBarBackgroundColor":  "#1677FF",
+                   "navigationBarTextStyle":  "white",
+                   "backgroundColor":  "#f7f8fa",
+                   "backgroundTextStyle":  "dark"
+               },
+    "tabBar":  {
+                   "color":  "#666",
+                   "selectedColor":  "#1677FF",
+                   "backgroundColor":  "#ffffff",
+                   "borderStyle":  "black",
+                   "list":  [
+                                {
+                                    "pagePath":  "pages/index/index",
+                                    "text":  "首页"
+                                },
+                                {
+                                    "pagePath":  "pages/templates/index",
+                                    "text":  "模板"
+                                },
+                                {
+                                    "pagePath":  "pages/profile/index",
+                                    "text":  "我的"
+                                }
+                            ]
+               },
+    "sitemapLocation":  "sitemap.json"
 }
-

@@ -1,5 +1,5 @@
 <view class="templates">
-  <!-- 搜索和筛选 -->
+  <!-- 搜索与新增 -->
   <view class="search-bar">
     <input 
       class="search-input" 
@@ -7,26 +7,26 @@
       bindinput="onSearchInput"
       value="{{searchKeyword}}"
     />
-    <button class="add-btn" bindtap="showAddTemplate">添加模板</button>
+    <button class="add-btn" bindtap="showAddTemplate">新增模板</button>
   </view>
 
   <!-- 模板列表 -->
   <view class="template-list">
-    <view class="template-item" wx:for="{{templateList}}" wx:key="id">
+    <view class="template-item" wx:for="{{templateList}}" wx:key="id" wx:for-item="item">
       <image class="template-cover" src="{{item.coverUrl}}" mode="aspectFill"></image>
       <view class="template-info">
         <text class="template-name">{{item.name}}</text>
         <text class="template-category">{{item.category}}</text>
         <text class="template-stats">下载: {{item.downloadCount}} | 使用: {{item.usageCount}}</text>
         <text class="template-status {{item.status === 'active' ? 'active' : 'inactive'}}">
-          {{item.status === 'active' ? '已启用' : '已禁用'}}
+          {{item.status === 'active' ? '已启用' : '已停用'}}
         </text>
       </view>
       <view class="template-actions">
         <button class="action-btn edit" bindtap="editTemplate" data-id="{{item.id}}">编辑</button>
         <button class="action-btn {{item.status === 'active' ? 'disable' : 'enable'}}" 
                 bindtap="toggleTemplateStatus" data-id="{{item.id}}" data-status="{{item.status}}">
-          {{item.status === 'active' ? '禁用' : '启用'}}
+          {{item.status === 'active' ? '停用' : '启用'}}
         </button>
         <button class="action-btn delete" bindtap="deleteTemplate" data-id="{{item.id}}">删除</button>
       </view>
@@ -39,10 +39,10 @@
     <text class="empty-text">暂无模板数据</text>
   </view>
 
-  <!-- 添加/编辑模板弹窗 -->
+  <!-- 新增/编辑模板弹窗 -->
   <view class="modal" wx:if="{{showTemplateModal}}">
     <view class="modal-content">
-      <text class="modal-title">{{editingTemplate ? '编辑模板' : '添加模板'}}</text>
+      <text class="modal-title">{{editingTemplate ? '编辑模板' : '新增模板'}}</text>
       
       <view class="form-group">
         <text class="label">模板名称</text>
@@ -50,7 +50,7 @@
       </view>
 
       <view class="form-group">
-        <text class="label">分类</text>
+        <text class="label">所属分类</text>
         <picker class="picker" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
           <view class="picker-value">{{templateForm.category || '请选择分类'}}</view>
         </picker>

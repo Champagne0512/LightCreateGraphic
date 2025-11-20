@@ -76,7 +76,7 @@ Page({
             id: page * 100 + 1,
             type: 'system',
             title: '系统通知',
-            content: '欢迎使用LightCreateGraphic！系统已为您优化了创作体验。',
+            content: '欢迎使用LightCreateGraphic！系统已为您优化了创体验。',
             time: '2024-11-17 10:00',
             read: false,
             important: true

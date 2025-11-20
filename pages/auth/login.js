@@ -1,7 +1,7 @@
 const { setStorage, getStorage } = require('../../utils/storage.js');
 const supa = require('../../services/supa.js');
 
-// 临时修复：如果缺少uid函数，提供一个简单的实现
+// 兼容：如缺少 uid 工具，提供回退实现
 function getClientUid() {
   return 'user_' + Math.random().toString(36).substr(2, 9);
 }
@@ -41,13 +41,13 @@ Page({
 
   // 手机号输入处理
   onPhoneInput(e) {
-    const phone = e.detail.value.replace(/\D/g, '');
+    const phone = (e.detail.value || '').replace(/\D/g, '');
     this.setData({ 'formData.phone': phone });
   },
 
   // 密码输入处理
   onPasswordInput(e) {
-    this.setData({ 'formData.password': e.detail.value });
+    this.setData({ 'formData.password': e.detail.value || '' });
   },
 
   // 切换密码可见性
@@ -57,14 +57,13 @@ Page({
 
   // 记住密码状态改变
   onRememberChange(e) {
-    const rememberMe = e.detail.value.includes('remember');
+    const rememberMe = (e.detail.value || []).includes('remember');
     this.setData({ 'formData.rememberMe': rememberMe });
   },
 
   // 处理登录
   async handleLogin() {
     const { phone, password, rememberMe } = this.data.formData;
-
     if (!this.validateForm()) return;
     this.setData({ isLoading: true });
 
@@ -88,7 +87,6 @@ Page({
   // 表单验证
   validateForm() {
     const { phone, password } = this.data.formData;
-
     if (!phone) {
       wx.showToast({ title: '请输入手机号', icon: 'none' });
       return false;
@@ -154,7 +152,6 @@ Page({
   // 游客登录
   handleGuestLogin() {
     this.setData({ isLoading: true });
-    
     try {
       const guestUserInfo = {
         userId: 'guest_' + Math.random().toString(36).substr(2, 9),
@@ -166,7 +163,6 @@ Page({
         createTime: new Date().toISOString(),
         isGuest: true
       };
-      
       this.saveLoginState(guestUserInfo, false);
       wx.showToast({ title: '游客模式登录成功', icon: 'success', duration: 2000 });
       setTimeout(() => { wx.switchTab({ url: '/pages/index/index' }); }, 1500);
@@ -178,12 +174,12 @@ Page({
     }
   },
 
-  // 微信登录
+  // 微信登录（占位）
   handleWechatLogin() {
     wx.showToast({ title: '微信登录功能开发中', icon: 'none', duration: 2000 });
   },
 
-  // 忘记密码
+  // 忘记密码（占位）
   navigateToForgotPassword() {
     wx.showToast({ title: '忘记密码功能开发中', icon: 'none', duration: 2000 });
   },

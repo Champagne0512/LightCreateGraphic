@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "模板中心",
+  "navigationBarBackgroundColor": "#6366f1",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f8fafc",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 50
+}

@@ -1,7 +1,15 @@
 {
   "description": "LightCreate Graphic Mini Program",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "db" },
+      { "type": "folder", "value": "tools" },
+      { "type": "folder", "value": "mock" },
+      { "type": "file",   "value": "app_js_backup_before_fix.js" },
+      { "type": "regexp", "value": "^tmp_.*\\.js$" },
+      { "type": "regexp", "value": "\\.md$" },
+      { "type": "regexp", "value": "\\.sql$" }
+    ],
     "include": []
   },
   "setting": {

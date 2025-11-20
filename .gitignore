@@ -1,0 +1,21 @@
+# 微信小程序相关忽略文件
+project.private.config.json
+*.log
+*.pyc
+
+# 临时文件
+*.bak
+*.tmp
+*.temp
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 缓存文件
+node_modules/
+.wx/
+
+# 备份文件
+backup/
+temp/

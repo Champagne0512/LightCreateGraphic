@@ -22,14 +22,10 @@ Page({
   },
 
   onLoad(options) {
-    this.setData({
-      showSortMenu: false
-    });
+    this.setData({ showSortMenu: false });
     this.loadDrafts();
-    // 设置页面标题
-    wx.setNavigationBarTitle({
-      title: '草稿管理'
-    });
+    wx.setNavigationBarTitle({ title: "草稿箱" });
+    this.updateSortText();
   },
 
   onShow() {
@@ -67,11 +63,7 @@ Page({
       // 应用排序
       drafts = this.applySort(drafts);
 
-      this.setData({
-        drafts,
-        loading: false,
-        isEmpty: drafts.length === 0
-      });
+      this.setData({ drafts,  }); this.updateSortText();
     } catch (error) {
       console.error('加载草稿失败:', error);
       this.setData({ loading: false, isEmpty: true });
@@ -151,11 +143,7 @@ Page({
   },
 
   // 切换排序方式
-  onSortChange(e) {
-    const { sortBy, sortOrder } = e.currentTarget.dataset;
-    this.setData({ sortBy, sortOrder });
-    this.loadDrafts();
-  },
+  onSortChange(e) { const { sortBy, sortOrder } = e.currentTarget.dataset; this.setData({ sortBy, sortOrder }); this.updateSortText(); this.loadDrafts(); },
 
   // 打开草稿
   openDraft(e) {
@@ -477,4 +465,6 @@ Page({
     const { id } = e.currentTarget.dataset;
     this.onDraftLongPress({ currentTarget: { dataset: { id } } });
   }
+  ,
+  updateSortText() { try { this.setData({ sortText: this.getSortText() }); } catch(_) { this.setData({ sortText: "" }); } }
 });

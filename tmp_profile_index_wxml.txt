@@ -1,0 +1,328 @@
+<view class="container">
+  <!-- 头部：用户信息 -->
+  <view class="profile-header">
+    <view class="user-info">
+      <view class="user-avatar" bindtap="uploadAvatar">
+        <image wx:if="{{profile.avatar_url}}" class="avatar-img" src="{{profile.avatar_url}}" mode="aspectFill" />
+        <text wx:else>??</text>
+        <view class="avatar-overlay">更换头像</view>
+      </view>
+      <view class="user-details">
+        <view class="user-name">{{profile.nickname || profile.name || '未命名用户'}}</view>
+        <view class="user-id">ID：{{profile.id ? profile.id.slice(0,8) : '--'}} · {{profile.phone || '未绑手机'}}</view>
+        <view class="user-status">
+          <text class="status-badge {{profile.member_status ? 'member' : 'free'}}">
+            {{profile.member_status ? '会员' : '免费用户'}}
+          </text>
+          <text class="security-level">安全等级：{{profile.security_level}}</text>
+        </view>
+      </view>
+      <button class="edit-btn" size="mini" bindtap="toggleEdit">{{editing ? '取消' : '编辑'}}</button>
+    </view>
+    
+    <!-- 统计信息 -->
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-num">{{stats.works}}</text>
+        <text class="stat-label">作品</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.favorites}}</text>
+        <text class="stat-label">收藏</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.drafts}}</text>
+        <text class="stat-label">草稿</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.templates}}</text>
+        <text class="stat-label">模板</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.downloads}}</text>
+        <text class="stat-label">下载</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-num">{{stats.views}}</text>
+        <text class="stat-label">浏览</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 顶部可选栏 -->
+  <view class="tab-bar">
+    <view 
+      class="tab-item {{activeTab === 'profile' ? 'tab-active' : ''}}" 
+      bindtap="switchTab" 
+      data-tab="profile"
+    >
+      <text class="tab-icon">??</text>
+      <text class="tab-label">个人资料</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'works' ? 'tab-active' : ''}}" 
+      bindtap="switchTab" 
+      data-tab="works"
+    >
+      <text class="tab-icon">??</text>
+      <text class="tab-label">我的作品</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'drafts' ? 'tab-active' : ''}}" 
+      bindtap="switchTab" 
+      data-tab="drafts"
+    >
+      <text class="tab-icon">??</text>
+      <text class="tab-label">草稿箱</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'templates' ? 'tab-active' : ''}}" 
+      bindtap="switchTab" 
+      data-tab="templates"
+    >
+      <text class="tab-icon">??</text>
+      <text class="tab-label">个人模板</text>
+    </view>
+  </view>
+
+  <!-- 内容区域 -->
+  <view class="content-section">
+    <!-- 个人资料标签页 -->
+    <view wx:if="{{activeTab === 'profile'}}">
+      <!-- 编辑资料 -->
+      <view wx:if="{{editing}}" class="card">
+        <view class="section-title">完善资料</view>
+        <view class="form-item">
+          <text class="form-label">姓名</text>
+          <input class="form-input" placeholder="请输入姓名" value="{{profile.name}}" bindinput="onNameInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">昵称</text>
+          <input class="form-input" placeholder="请输入昵称" value="{{profile.nickname}}" bindinput="onNicknameInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">签名</text>
+          <input class="form-input" placeholder="这个人很懒，还没有签名" value="{{profile.bio}}" bindinput="onBioInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">城市</text>
+          <input class="form-input" placeholder="城市/地区" value="{{profile.location}}" bindinput="onLocationInput" />
+        </view>
+        <view class="form-item">
+          <text class="form-label">网站</text>
+          <input class="form-input" placeholder="https://example.com" value="{{profile.website}}" bindinput="onWebsiteInput" />
+        </view>
+        <button class="primary-btn" loading="{{isLoading}}" bindtap="saveProfile">保存资料</button>
+      </view>
+
+      <!-- 功能卡片 -->
+      <view class="card">
+        <view class="section-title">账户安全</view>
+        <view class="feature-list">
+          <view class="feature-item" bindtap="navigateToSecurity">
+            <text class="feature-icon">??</text>
+            <view class="feature-info">
+              <text class="feature-title">密码修改</text>
+              <text class="feature-desc">定期更新密码保护账户安全</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+          <view class="feature-item" bindtap="navigateToSecurity">
+            <text class="feature-icon">??</text>
+            <view class="feature-info">
+              <text class="feature-title">双重验证</text>
+              <text class="feature-desc">开启后需要验证码登录</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 隐私设置 -->
+      <view class="card">
+        <view class="section-title">隐私设置</view>
+        <view class="setting-item">
+          <text class="setting-label">公开个人资料</text>
+          <switch checked="{{profile.privacy_settings.profile_visible}}" data-setting="profile_visible" bindchange="togglePrivacySetting" />
+        </view>
+        <view class="setting-item">
+          <text class="setting-label">公开作品</text>
+          <switch checked="{{profile.privacy_settings.works_visible}}" data-setting="works_visible" bindchange="togglePrivacySetting" />
+        </view>
+        <view class="setting-item">
+          <text class="setting-label">显示在线状态</text>
+          <switch checked="{{profile.privacy_settings.show_online_status}}" data-setting="show_online_status" bindchange="togglePrivacySetting" />
+        </view>
+        <button class="secondary-btn" bindtap="savePrivacySettings">保存设置</button>
+      </view>
+
+      <!-- 数据统计 -->
+      <view class="card" bindtap="navigateToStatistics">
+        <view class="section-title">数据统计</view>
+        <view class="stats-detail">
+          <view class="stat-detail-item">
+            <text class="detail-label">会员天数</text>
+            <text class="detail-value">{{stats.memberDays}} 天</text>
+          </view>
+          <view class="stat-detail-item">
+            <text class="detail-label">模板使用</text>
+            <text class="detail-value">{{stats.templates}} 次</text>
+          </view>
+          <view class="stat-detail-item">
+            <text class="detail-label">作品下载</text>
+            <text class="detail-value">{{stats.downloads}} 次</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 消息通知 -->
+      <view class="card" bindtap="navigateToNotifications">
+        <view class="section-title">消息通知</view>
+        <view class="notification-preview">
+          <text class="notification-count">{{unreadCount}} 条未读</text>
+          <text class="notification-arrow">?</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 我的作品标签页 -->
+    <view wx:if="{{activeTab === 'works'}}">
+      <view class="card">
+        <view class="section-title">作品管理</view>
+        <view class="feature-list">
+          <view class="feature-item" bindtap="navigateToWorks">
+            <text class="feature-icon">??</text>
+            <view class="feature-info">
+              <text class="feature-title">我的作品</text>
+              <text class="feature-desc">查看和管理所有作品</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+          <view class="feature-item" bindtap="createNewDraft">
+            <text class="feature-icon">?</text>
+            <view class="feature-info">
+              <text class="feature-title">新建作品</text>
+              <text class="feature-desc">开始创作新作品</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 云端作品 -->
+      <view class="card">
+        <view class="section-title">云端作品</view>
+        <block wx:if="{{cloudWorks.length}}">
+          <block wx:for="{{cloudWorks}}" wx:key="work_id">
+            <view class="cloud-item" bindtap="openCloudWork" data-work="{{item}}">
+              <view class="cloud-icon">??</view>
+              <view class="cloud-info">
+                <view class="cloud-name">{{item.work_name || item.work_id}}</view>
+                <view class="cloud-type">{{item.scene_type || '未分类'}} · {{item.created_at && item.created_at.slice(0,10)}}</view>
+              </view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="empty-state">
+          <text class="empty-icon">??</text>
+          <text class="empty-text">暂无云端作品</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 草稿箱标签页 -->
+    <view wx:if="{{activeTab === 'drafts'}}">
+      <!-- 草稿管理 -->
+      <view class="card">
+        <view class="section-title">草稿管理</view>
+        <view class="feature-list">
+          <view class="feature-item" bindtap="openDraftsPage">
+            <text class="feature-icon">??</text>
+            <view class="feature-info">
+              <text class="feature-title">草稿箱</text>
+              <text class="feature-desc">查看和管理所有草稿</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+          <view class="feature-item" bindtap="createNewDraft">
+            <text class="feature-icon">?</text>
+            <view class="feature-info">
+              <text class="feature-title">新建草稿</text>
+              <text class="feature-desc">开始创作新作品</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 我的草稿 -->
+      <view class="card">
+        <view class="section-title">我的草稿</view>
+        <block wx:if="{{drafts.length}}">
+          <block wx:for="{{drafts}}" wx:key="id">
+            <view class="draft-item" bindtap="openDraft" bindlongpress="draftActions" data-id="{{item.id}}">
+              <view class="draft-info">
+                <text class="draft-name">{{item.name || item.id}}</text>
+                <text class="draft-size">{{item.size.w}}x{{item.size.h}}</text>
+              </view>
+              <view class="draft-arrow">?</view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="empty-state">
+          <text class="empty-icon">??</text>
+          <text class="empty-text">暂无草稿</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 个人模板标签页 -->
+    <view wx:if="{{activeTab === 'templates'}}">
+      <view class="card">
+        <view class="section-title">模板管理</view>
+        <view class="feature-list">
+          <view class="feature-item" bindtap="navigateToTemplates">
+            <text class="feature-icon">??</text>
+            <view class="feature-info">
+              <text class="feature-title">我的模板</text>
+              <text class="feature-desc">查看和管理个人模板</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+          <view class="feature-item" bindtap="createNewTemplate">
+            <text class="feature-icon">?</text>
+            <view class="feature-info">
+              <text class="feature-title">新建模板</text>
+              <text class="feature-desc">创建自定义模板</text>
+            </view>
+            <text class="feature-arrow">?</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="section-title">模板统计</view>
+        <view class="stats-detail">
+          <view class="stat-detail-item">
+            <text class="detail-label">模板数量</text>
+            <text class="detail-value">{{stats.templates}} 个</text>
+          </view>
+          <view class="stat-detail-item">
+            <text class="detail-label">使用次数</text>
+            <text class="detail-value">{{stats.templateUses || 0}} 次</text>
+          </view>
+          <view class="stat-detail-item">
+            <text class="detail-label">收藏人数</text>
+            <text class="detail-value">{{stats.templateFavorites || 0}} 人</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签页结束标签 -->
+  <view wx:if="{{activeTab === 'profile'}}"></view>
+  <view wx:if="{{activeTab === 'works'}}"></view>
+  <view wx:if="{{activeTab === 'drafts'}}"></view>
+  <view wx:if="{{activeTab === 'templates'}}"></view>
+</view>

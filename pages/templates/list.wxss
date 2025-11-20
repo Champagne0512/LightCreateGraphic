@@ -1,4 +1,4 @@
-/* === 模板库 - 专业设计风格 === */
+/* === 模板库 - 专业设置计风格 === */
 
 .template-container {
   background: var(--bg-light);
@@ -293,7 +293,7 @@
   font-size: 24rpx;
 }
 
-/* 响应式设计 */
+/* 响应式设置计 */
 @media (max-width: 750rpx) {
   .template-grid {
     grid-template-columns: 1fr;

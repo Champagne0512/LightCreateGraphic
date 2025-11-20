@@ -142,7 +142,11 @@ class SupabaseService {
 
   async getDashboardStats() {
     if (!this.enabled()) return { totalUsers: 1234, totalTemplates: 56, totalWorks: 789, activeUsers: 45 };
-    try { return await this.wxRpc('get_dashboard_stats', {}); } catch { return { totalUsers: 0, totalTemplates: 0, totalWorks: 0, activeUsers: 0 }; }
+    try { 
+      return await this.wxRpc('get_dashboard_stats', {}); 
+    } catch (e) { 
+      return { totalUsers: 0, totalTemplates: 0, totalWorks: 0, activeUsers: 0 }; 
+    }
   }
 
   async getUsers(filter = {}) {
@@ -165,7 +169,7 @@ class SupabaseService {
     try {
       const q = `?select=work_id,work_name,scene_type,template_id,created_at&user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=100`;
       return await this.wxRest(`/rest/v1/works${q}`);
-    } catch { return []; }
+    } catch (e) { return []; }
   }
 
   // ===== Profile RPCs =====
@@ -354,7 +358,7 @@ class SupabaseService {
     if (userId) params.push(`user_id=eq.${encodeURIComponent(userId)}`);
     if (clientUid) params.push(`client_uid=eq.${encodeURIComponent(clientUid)}`);
     const query = `?select=work_id,work_name,scene_type,template_id,created_at&order=created_at.desc&limit=${limit}` + (params.length?`&${params.join('&')}`:'');
-    try { return await this.wxRest(`/rest/v1/works${query}`); } catch { return []; }
+    try { return await this.wxRest(`/rest/v1/works${query}`); } catch (e) { return []; }
   }
 
   // Mock data

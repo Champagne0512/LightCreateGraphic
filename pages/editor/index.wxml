@@ -1,7 +1,7 @@
 <view class="editor-container">
   <!-- 画布区域 -->
   <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px; margin-top: 40rpx;">
-    <!-- 画笔图层 - 放在最上层确保能接收触摸事件 -->
+    <!-- 画笔图层 - 放在最上手层确保能接收触摸事件 -->
     <canvas wx:if="{{drawMode}}" canvas-id="brushCanvas" 
             style="position:absolute;left:0;top:0;width: {{displayWidth}}px; height: {{displayHeight}}px;z-index:999;"
             catchtouchstart="onBrushStart" catchtouchmove="onBrushMove" catchtouchend="onBrushEnd"
@@ -105,7 +105,7 @@
 
     <!-- 图层操作 -->
     <view class="action-buttons">
-      <button class="action-btn" bindtap="bringForward">上移</button>
+      <button class="action-btn" bindtap="bringForward">上手移</button>
       <button class="action-btn" bindtap="sendBackward">下移</button>
       <button class="action-btn" bindtap="duplicateSelected">复制</button>
       <button class="action-btn" bindtap="deleteSelected">删除</button>

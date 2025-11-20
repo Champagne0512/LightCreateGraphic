@@ -32,7 +32,8 @@ Page({
 
   async loadSecuritySettings() {
     const app = getApp();
-    const userId = app.globalData.userInfo?.userId;
+    const user = app.globalData.userInfo || {};
+    const userId = user.userId;
     if (!userId) return;
 
     this.setData({ isLoading: true });

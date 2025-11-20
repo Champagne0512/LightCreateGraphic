@@ -188,7 +188,7 @@
   font-size: 36rpx;
 }
 
-/* 响应式设计 */
+/* 响应式设置计 */
 @media (max-width: 750rpx) {
   .onboarding-header {
     padding: 60rpx 24rpx 40rpx;

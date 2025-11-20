@@ -25,7 +25,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
+  background-image:
     linear-gradient(rgba(139, 92, 246, 0.02) 0 0),
     linear-gradient(90deg, rgba(0,0,0,.08) 1px, transparent 0),
     linear-gradient(rgba(0,0,0,.08) 1px, transparent 0);

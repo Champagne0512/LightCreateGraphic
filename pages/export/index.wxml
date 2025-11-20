@@ -5,17 +5,17 @@
     <text class="export-subtitle">您的设计已成功生成</text>
   </view>
 
-  <!-- 预览区域 -->
+  <!-- 预览览区域 -->
   <view class="preview-section">
     <view wx:if="{{img}}" class="preview-card">
-      <text class="preview-label">预览效果</text>
+      <text class="preview-label">预览览效果</text>
       <image class="preview-image" mode="widthFix" src="{{img}}" show-menu-by-longpress="true" />
       
       <!-- 云端状态显示 -->
       <view wx:if="{{remote}}" class="cloud-status">
         <text class="cloud-icon">☁️</text>
         <view>
-          <text class="cloud-text">已上传到云端</text>
+          <text class="cloud-text">已上手传到云端</text>
           <text class="cloud-url">{{remote}}</text>
         </view>
       </view>
@@ -24,7 +24,7 @@
     <!-- 空状态 -->
     <view wx:else class="empty-state">
       <text class="empty-icon">🖼️</text>
-      <text class="empty-title">暂无预览</text>
+      <text class="empty-title">暂无预览览</text>
       <text class="empty-desc">请先在编辑器中创建设计</text>
     </view>
   </view>
@@ -40,7 +40,7 @@
       
       <view class="action-card" open-type="share">
         <view class="action-icon">📤</view>
-        <text class="action-text">分享作品</text>
+        <text class="action-text">分享享作品</text>
         <text class="action-desc">社交媒体</text>
       </view>
     </view>

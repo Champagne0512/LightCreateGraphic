@@ -1,4 +1,4 @@
-﻿const { loadDrafts } = require('../../utils/storage.js');
+const { loadDrafts } = require('../../utils/storage.js');
 const { getClientUid } = require('../../utils/client.js');
 const supa = require('../../services/supa.js');
 

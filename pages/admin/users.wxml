@@ -1,9 +1,9 @@
 <view class="users">
-  <!-- 搜索和筛选 -->
+  <!-- 搜索与筛选 -->
   <view class="search-bar">
     <input 
       class="search-input" 
-      placeholder="搜索用户名或邮箱" 
+      placeholder="搜索用户名称/邮箱" 
       bindinput="onSearchInput"
       value="{{searchKeyword}}"
     />
@@ -14,7 +14,7 @@
 
   <!-- 用户列表 -->
   <view class="user-list">
-    <view class="user-item" wx:for="{{userList}}" wx:key="id">
+    <view class="user-item" wx:for="{{userList}}" wx:key="id" wx:for-item="item">
       <image class="user-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
       <view class="user-info">
         <text class="user-name">{{item.name}}</text>

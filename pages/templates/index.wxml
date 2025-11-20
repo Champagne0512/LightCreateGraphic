@@ -1,0 +1,247 @@
+<view class="container">
+  <!-- 顶部搜索和筛选区域 -->
+  <view class="search-section">
+    <view class="search-container">
+      <!-- 搜索框 -->
+      <view class="search-input-wrapper">
+        <text class="search-icon">🔍</text>
+        <input 
+          class="search-input" 
+          placeholder="搜索模板，如：海报、社交媒体、电商主图…" 
+          value="{{searchKeyword}}" 
+          bindinput="onSearchInput" 
+          bindconfirm="onSearchConfirm"
+        />
+        <button class="clear-btn" wx:if="{{searchKeyword}}" bindtap="clearSearch">×</button>
+      </view>
+      
+      <!-- 快捷筛选标签 -->
+      <view class="quick-filters">
+        <scroll-view class="filters-scroll" scroll-x="true" scroll-with-animation>
+          <view class="filters-list">
+            <view 
+              class="filter-tag {{item.active ? 'active' : ''}}" 
+              wx:for="{{quickFilters}}" 
+              wx:key="id"
+              bindtap="toggleFilter"
+              data-filter="{{item}}"
+            >
+              <text class="filter-icon">{{item.icon}}</text>
+              <text class="filter-text">{{item.name}}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 高级筛选面板 -->
+  <view class="filter-panel {{showFilterPanel ? 'show' : ''}}">
+    <view class="filter-header">
+      <text class="filter-title">筛选模板</text>
+      <button class="close-filter" bindtap="toggleFilterPanel">×</button>
+    </view>
+    
+    <view class="filter-content">
+      <!-- 分类筛选 -->
+      <view class="filter-group">
+        <text class="group-title">模板类型</text>
+        <view class="category-grid">
+          <view 
+            class="category-item {{item.active ? 'active' : ''}}" 
+            wx:for="{{categories}}" 
+            wx:key="id"
+            bindtap="toggleCategory"
+            data-category="{{item}}"
+          >
+            <text class="category-icon">{{item.icon}}</text>
+            <text class="category-name">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 用途筛选 -->
+      <view class="filter-group">
+        <text class="group-title">使用场景</text>
+        <view class="usage-grid">
+          <view 
+            class="usage-item {{item.active ? 'active' : ''}}" 
+            wx:for="{{usages}}" 
+            wx:key="id"
+            bindtap="toggleUsage"
+            data-usage="{{item}}"
+          >
+            <text class="usage-text">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 排序方式 -->
+      <view class="filter-group">
+        <text class="group-title">排序方式</text>
+        <view class="sort-options">
+          <view 
+            class="sort-option {{item.active ? 'active' : ''}}" 
+            wx:for="{{sortOptions}}" 
+            wx:key="id"
+            bindtap="changeSort"
+            data-sort="{{item}}"
+          >
+            <text class="sort-text">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="filter-actions">
+      <button class="reset-btn" bindtap="resetFilters">重置</button>
+      <button class="apply-btn" bindtap="applyFilters">应用筛选</button>
+    </view>
+  </view>
+
+  <!-- 热门推荐专区 -->
+  <view class="featured-section" wx:if="{{featuredTemplates.length}}">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="title-text">🔥 热门推荐</text>
+        <text class="title-badge">精选</text>
+      </view>
+      <view class="section-more" bindtap="viewAllFeatured">
+        <text class="more-text">查看全部</text>
+        <text class="more-icon">›</text>
+      </view>
+    </view>
+    
+    <scroll-view class="featured-scroll" scroll-x="true" scroll-with-animation>
+      <view class="featured-list">
+        <view 
+          class="featured-item" 
+          wx:for="{{featuredTemplates}}" 
+          wx:key="id"
+          bindtap="previewTemplate"
+          data-template="{{item}}"
+        >
+          <view class="featured-badge">推荐</view>
+          <view class="featured-image">
+            <image class="template-img" src="{{item.thumbnail}}" mode="aspectFill" />
+            <view class="image-overlay">
+              <text class="use-count">{{item.useCount}} 次使用</text>
+            </view>
+          </view>
+          <view class="featured-info">
+            <text class="template-name">{{item.name}}</text>
+            <text class="template-desc">{{item.description}}</text>
+            <view class="template-stats">
+              <text class="stat-item">⭐ {{item.rating}}</text>
+              <text class="stat-item">{{item.category}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 模板展示区域 -->
+  <view class="templates-section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="title-text">📋 全部模板</text>
+        <text class="title-count">({{totalCount}})</text>
+      </view>
+      
+      <!-- 视图切换 -->
+      <view class="view-toggle">
+        <text 
+          class="view-option {{viewMode === 'grid' ? 'active' : ''}}" 
+          bindtap="switchViewMode" 
+          data-mode="grid"
+        >网格</text>
+        <text 
+          class="view-option {{viewMode === 'list' ? 'active' : ''}}" 
+          bindtap="switchViewMode" 
+          data-mode="list"
+        >列表</text>
+      </view>
+    </view>
+
+    <!-- 网格视图 -->
+    <view class="templates-grid" wx:if="{{viewMode === 'grid'}}">
+      <view 
+        class="template-card" 
+        wx:for="{{templates}}" 
+        wx:key="id"
+        bindtap="previewTemplate"
+        data-template="{{item}}"
+      >
+        <view class="card-image">
+          <image class="template-img" src="{{item.thumbnail}}" mode="aspectFill" />
+          <view class="card-overlay">
+            <text class="use-btn">使用</text>
+          </view>
+        </view>
+        <view class="card-info">
+          <text class="template-name">{{item.name}}</text>
+          <text class="template-category">{{item.category}}</text>
+          <view class="template-stats">
+            <text class="stat-item">⭐ {{item.rating}}</text>
+            <text class="stat-item">👁 {{item.views}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 列表视图 -->
+    <view class="templates-list" wx:elif="{{viewMode === 'list'}}">
+      <view 
+        class="template-item" 
+        wx:for="{{templates}}" 
+        wx:key="id"
+        bindtap="previewTemplate"
+        data-template="{{item}}"
+      >
+        <view class="item-image">
+          <image class="template-img" src="{{item.thumbnail}}" mode="aspectFill" />
+        </view>
+        <view class="item-info">
+          <text class="template-name">{{item.name}}</text>
+          <text class="template-desc">{{item.description}}</text>
+          <view class="item-stats">
+            <text class="stat-item">⭐ {{item.rating}}</text>
+            <text class="stat-item">👁 {{item.views}}</text>
+            <text class="stat-item">📏 {{item.size}}</text>
+          </view>
+        </view>
+        <view class="item-action">
+          <text class="use-btn">使用</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore}}">
+      <button class="load-btn" bindtap="loadMore">加载更多</button>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!templates.length && !isLoading}}">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无模板数据</text>
+      <text class="empty-desc">尝试调整筛选条件或搜索关键词</text>
+      <button class="empty-btn" bindtap="resetFilters">重置筛选</button>
+    </view>
+  </view>
+
+  <!-- 筛选按钮 -->
+  <view class="floating-actions">
+    <button class="filter-btn" bindtap="toggleFilterPanel">
+      <text class="filter-icon">🎛️</text>
+      <text class="filter-text">筛选</text>
+    </button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{isLoading}}">
+    <text class="loading-icon">⏳</text>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view>

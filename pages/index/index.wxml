@@ -1,143 +1,71 @@
 <view class="container">
-  <!-- 创意头部区域 -->
+  <!-- 顶部品牌与主 CTA -->
   <view class="hero-section">
-    <view class="hero-gradient">
-      <view class="hero-content">
-        <view class="brand-logo">
-          <text class="logo-icon">🎨</text>
-          <text class="logo-text">轻创图文</text>
-        </view>
-        <view class="hero-subtitle">让创意触手可及</view>
-        <view class="hero-stats">
-          <view class="stat-item">
-            <text class="stat-number">3</text>
-            <text class="stat-label">步上手</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-number">100+</text>
-            <text class="stat-label">模板</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-number">99%</text>
-            <text class="stat-label">商用安全</text>
-          </view>
+    <view class="hero-content">
+      <view class="brand-area">
+        <view class="logo-wrapper"><text class="logo-icon">🎨</text></view>
+        <view class="brand-info">
+          <text class="app-name">轻创图文</text>
+          <text class="app-tagline">专业设计，简单创作</text>
         </view>
       </view>
-    </view>
-  </view>
 
-  <!-- 智能搜索区域 -->
-  <view class="search-section card">
-    <view class="search-header">
-      <text class="search-icon">🔍</text>
-      <text class="search-title">智能搜索</text>
-    </view>
-    <view class="search-input-group">
-      <input class="search-input" placeholder="输入场景或关键词..." bindinput="onSearchInput" value="{{keyword}}" />
-      <button class="btn-primary search-btn" bindtap="onSearch">
-        <text class="btn-text">发现灵感</text>
-      </button>
-    </view>
-    <view class="search-tags">
-      <text class="tag-label">热门搜索</text>
-      <text class="search-tag" bindtap="quickSearch" data-keyword="电商主图">电商主图</text>
-      <text class="search-tag" bindtap="quickSearch" data-keyword="社交媒体">社交媒体</text>
-      <text class="search-tag" bindtap="quickSearch" data-keyword="海报设计">海报设计</text>
-    </view>
-  </view>
-
-  <!-- 快速创作区域 -->
-  <view class="quick-actions card">
-    <view class="actions-header">
-      <text class="actions-icon">⚡</text>
-      <text class="actions-title">快速开始</text>
-    </view>
-    <view class="actions-grid">
-      <view class="action-item" bindtap="createBlank">
-        <view class="action-icon">🆕</view>
-        <text class="action-text">新建画布</text>
-        <text class="action-desc">1:1 标准尺寸</text>
-      </view>
-      <view class="action-item" bindtap="openDrafts">
-        <view class="action-icon">📁</view>
-        <text class="action-text">草稿箱</text>
-        <text class="action-desc">继续创作</text>
-      </view>
-      <view class="action-item" bindtap="openTemplates">
-        <view class="action-icon">🎯</view>
-        <text class="action-text">模板库</text>
-        <text class="action-desc">精选模板</text>
-      </view>
-      <view class="action-item" bindtap="openTutorial">
-        <view class="action-icon">📚</view>
-        <text class="action-text">教程</text>
-        <text class="action-desc">新手引导</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 场景分类区域 -->
-  <view class="scene-section">
-    <view class="section-header">
-      <text class="section-title">创意场景</text>
-      <text class="section-more" bindtap="viewAllScenes">全部 ></text>
-    </view>
-    <view class="scene-grid">
-      <block wx:for="{{scenes}}" wx:key="id" wx:for-item="cat">
-        <view class="scene-card card" bindtap="openSceneCategory" data-id="{{cat.id}}">
-          <view class="scene-header">
-            <text class="scene-icon">{{cat.icon || '✨'}}</text>
-            <text class="scene-name">{{cat.name}}</text>
-          </view>
-          <view class="scene-count">{{cat.children && cat.children.length || 0}} 个模板</view>
-          <view class="scene-tags">
-            <block wx:for="{{cat.children ? cat.children.slice(0, 3) : []}}" wx:key="id" wx:for-item="sub">
-              <text class="scene-tag">{{sub.name}}</text>
-            </block>
-            <text wx:if="{{cat.children && cat.children.length > 3}}" class="scene-more">+{{cat.children.length - 3}}</text>
-          </view>
+      <view class="cta-section">
+        <view class="cta-header">
+          <text class="cta-title">开启你的创意之旅</text>
+          <text class="cta-subtitle">选择适合你的创作方式</text>
         </view>
-      </block>
-    </view>
-  </view>
-
-  <!-- 推荐模板区域 -->
-  <view class="featured-section">
-    <view class="section-header">
-      <text class="section-title">精选推荐</text>
-      <text class="section-more" bindtap="viewAllTemplates">更多 ></text>
-    </view>
-    <view class="featured-grid">
-      <block wx:for="{{recoTemplates}}" wx:key="id">
-        <view class="featured-card card" bindtap="useTemplate" data-id="{{item.id}}">
-          <view class="template-preview" style="background: {{item.coverColor}};">
-            <text class="template-name">{{item.name}}</text>
-            <view class="template-badge">
-              <text class="badge-text">{{item.scene || '通用'}}</text>
+        <view class="primary-actions">
+          <button class="primary-cta main-cta" bindtap="createBlank">
+            <view class="cta-icon-wrapper"><text class="cta-icon">✏️</text></view>
+            <view class="cta-content">
+              <text class="cta-text">立即创作</text>
+              <text class="cta-subtitle">从空白开始，自由设计</text>
             </view>
-          </view>
-          <view class="template-info">
-            <text class="template-desc">{{item.description || '专业的图文设计模板'}}</text>
-            <view class="template-stats">
-              <text class="stat">⭐{{item.rating || 4.8}}</text>
-              <text class="stat">👁️ {{item.views || '1.2k'}}</text>
-            </view>
+            <text class="cta-arrow">→</text>
+          </button>
+
+          <view class="secondary-actions">
+            <button class="secondary-cta" bindtap="openTemplates"><text class="cta-icon">📋</text><text class="cta-text">模板创作</text></button>
+            <button class="secondary-cta" bindtap="openDrafts"><text class="cta-icon">📝</text><text class="cta-text">继续编辑</text></button>
           </view>
         </view>
-      </block>
+      </view>
     </view>
   </view>
 
-  <!-- 底部引导区域 -->
-  <view class="footer-section">
-    <view class="footer-card card">
-      <text class="footer-title">开始你的创作之旅</text>
-      <text class="footer-desc">无需设计经验，轻松制作专业级图文内容</text>
-      <button class="btn-primary footer-btn" bindtap="createBlank">
-        <text class="btn-text">立即体验</text>
-      </button>
+  <!-- 登录/注册入口模块 -->
+  <view class="auth-section">
+    <view wx:if="{{!loggedIn}}" class="auth-card">
+      <text class="auth-title">登录解锁云端草稿与作品同步</text>
+      <view class="auth-actions">
+        <button class="btn-primary" bindtap="goLogin">登录</button>
+        <button class="btn-secondary" bindtap="goRegister">注册</button>
+      </view>
+    </view>
+    <view wx:elif="{{loggedIn}}" class="auth-card">
+      <text class="auth-title">欢迎回来，{{userName || '用户'}}</text>
+      <view class="auth-actions">
+        <button class="btn-secondary" bindtap="openProfile">前往个人中心</button>
+        <button class="btn-secondary danger" bindtap="logoutFromHome">退出登录</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索区（保留） -->
+  <view class="search-section">
+    <view class="search-container">
+      <view class="search-header">
+        <text class="search-title">快速找到合适的设计模板</text>
+        <text class="search-subtitle">输入关键词或选择热门分类</text>
+      </view>
+      <view class="search-area">
+        <view class="search-input-wrapper">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="搜索设计模板，如：海报、社交媒体、电商主图…" bindinput="onSearchInput" value="{{keyword}}" />
+          <button class="search-btn" bindtap="onSearch"><text class="btn-text">搜索</text></button>
+        </view>
+      </view>
     </view>
   </view>
 </view>

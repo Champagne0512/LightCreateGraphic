@@ -10,6 +10,10 @@
 
   <!-- 注册表单 -->
   <view class="form-container">
+    <view class="form-header">
+      <text class="form-title">注册账号</text>
+      <text class="form-subtitle">创建您的轻创图文账户</text>
+    </view>
     <form bindsubmit="handleRegister">
       <!-- 手机号输入 -->
       <view class="form-group">
@@ -93,8 +97,7 @@
   </view>
 
   <!-- 加载遮罩 -->
-  <view wx:if="{{isLoading}}" class="loading-mask">
-    <view class="loading-spinner"></view>
-  </view>
+    <view wx:if="{{isLoading}}" class="loading-mask">
+      <view class="loading-spinner"></view>
+    </view>
 </view>
-

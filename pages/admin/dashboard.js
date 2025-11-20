@@ -28,7 +28,7 @@ Page({
           { id: 1, time: '09:30', content: '用户张三注册账号' },
           { id: 2, time: '10:15', content: '模板“商务海报”被下载' },
           { id: 3, time: '11:00', content: '系统备份完成' },
-          { id: 4, time: '13:45', content: '新用户李四完成首次创作' }
+          { id: 4, time: '13:45', content: '新用户李四完成首次创' }
         ]
       }
       this.setData({ stats: mockData.stats, recentActivities: mockData.recentActivities })

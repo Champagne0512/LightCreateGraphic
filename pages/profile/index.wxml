@@ -1,4 +1,4 @@
-﻿<view class="container">
+<view class="container">
   <!-- 头部：用户信息 -->
   <view class="profile-header">
     <view class="user-info">
@@ -131,7 +131,7 @@
             <text class="feature-icon">🔒</text>
             <view class="feature-info">
               <text class="feature-title">双重验证</text>
-              <text class="feature-desc">开启后需要验证码登录</text>
+              <text class="feature-desc">开始启后需要验证码登录</text>
             </view>
             <text class="feature-arrow">›</text>
           </view>
@@ -142,11 +142,11 @@
       <view class="card">
         <view class="section-title">隐私设置</view>
         <view class="setting-item">
-          <text class="setting-label">公开个人资料</text>
+          <text class="setting-label">公开始个人资料</text>
           <switch checked="{{profile.privacy_settings.profile_visible}}" data-setting="profile_visible" bindchange="togglePrivacySetting" />
         </view>
         <view class="setting-item">
-          <text class="setting-label">公开作品</text>
+          <text class="setting-label">公开始作品</text>
           <switch checked="{{profile.privacy_settings.works_visible}}" data-setting="works_visible" bindchange="togglePrivacySetting" />
         </view>
         <view class="setting-item">
@@ -202,7 +202,7 @@
             <text class="feature-icon">➕</text>
             <view class="feature-info">
               <text class="feature-title">新建作品</text>
-              <text class="feature-desc">开始创作新作品</text>
+              <text class="feature-desc">开始始创作新作品</text>
             </view>
             <text class="feature-arrow">›</text>
           </view>
@@ -218,7 +218,7 @@
               <view class="cloud-icon">☁️</view>
               <view class="cloud-info">
                 <view class="cloud-name">{{item.work_name || item.work_id}}</view>
-                <view class="cloud-type">{{item.scene_type || '未分类'}} · {{item.created_at && item.created_at.slice(0,10)}}</view>
+                <view class="cloud-type">{{item.scene_type || '未分享类'}} · {{item.created_at && item.created_at.slice(0,10)}}</view>
               </view>
             </view>
           </block>
@@ -248,7 +248,7 @@
             <text class="feature-icon">➕</text>
             <view class="feature-info">
               <text class="feature-title">新建草稿</text>
-              <text class="feature-desc">开始创作新作品</text>
+              <text class="feature-desc">开始始创作新作品</text>
             </view>
             <text class="feature-arrow">›</text>
           </view>
@@ -272,7 +272,6 @@
         <view wx:else class="empty-state">
           <text class="empty-icon">📝</text>
           <text class="empty-text">暂无草稿</text>
-          <button class="primary-btn" bindtap="createNewDraft">新建草稿</button>
         </view>
       </view>
     </view>

@@ -1,0 +1,20 @@
+# 图片资源目录
+
+这个目录用于存放小程序所需的图片资源。
+
+由于项目当前缺少图片资源，建议添加以下图片：
+
+1. 引导页图片：
+   - /images/onboarding/welcome.png
+   - /images/onboarding/templates.png  
+   - /images/onboarding/easy.png
+
+2. 管理后台图标：
+   - /images/admin/template.png
+   - /images/admin/user.png
+   - /images/admin/analytics.png
+   - /images/admin/settings.png
+
+3. 默认头像和占位图片
+
+请添加相应的图片文件到对应目录。

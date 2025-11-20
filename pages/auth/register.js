@@ -16,18 +16,18 @@ Page({
 
   // 手机号输入处理
   onPhoneInput(e) {
-    const phone = e.detail.value.replace(/\D/g, '');
+    const phone = (e.detail.value || '').replace(/\D/g, '');
     this.setData({ 'formData.phone': phone });
   },
 
   // 密码输入处理
   onPasswordInput(e) {
-    this.setData({ 'formData.password': e.detail.value });
+    this.setData({ 'formData.password': e.detail.value || '' });
   },
 
   // 确认密码输入处理
   onConfirmPasswordInput(e) {
-    this.setData({ 'formData.confirmPassword': e.detail.value });
+    this.setData({ 'formData.confirmPassword': e.detail.value || '' });
   },
 
   // 切换密码可见性
@@ -37,7 +37,7 @@ Page({
 
   // 用户协议状态改变
   onAgreementChange(e) {
-    const agreed = e.detail.value.includes('agreement');
+    const agreed = (e.detail.value || []).includes('agreement');
     this.setData({ 'formData.agreed': agreed });
   },
 
@@ -101,12 +101,12 @@ Page({
     app.globalData.isAdmin = userInfo.role === 'admin';
   },
 
-  // 显示用户协议
+  // 显示用户协议（占位）
   showUserAgreement() {
     wx.showToast({ title: '用户协议功能开发中', icon: 'none', duration: 2000 });
   },
 
-  // 显示隐私政策
+  // 显示隐私政策（占位）
   showPrivacyPolicy() {
     wx.showToast({ title: '隐私政策功能开发中', icon: 'none', duration: 2000 });
   },

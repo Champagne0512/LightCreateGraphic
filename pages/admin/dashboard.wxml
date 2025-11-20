@@ -1,5 +1,5 @@
 <view class="dashboard">
-  <!-- 顶部统计卡片 -->
+  <!-- 概览统计卡片 -->
   <view class="stats-cards">
     <view class="stat-card">
       <text class="stat-value">{{stats.totalUsers}}</text>
