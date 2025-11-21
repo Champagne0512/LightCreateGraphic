@@ -2,20 +2,21 @@
 
 .editor-container {
   padding: 0;
-  background: var(--bg-light);
-  min-height: 100vh;
+  background: #f0f0f0;
+  height: 100vh;
   position: relative;
 }
 
 /* 画布区域 */
 .canvas-wrap {
-  margin: 80rpx auto 240rpx auto;
+  margin: 0 auto 240rpx auto;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-creative);
   border-radius: 20rpx;
   border: 1rpx solid var(--border-light);
   z-index: 10;
+  background-color: #ffffff;
 }
 
 .canvas-wrap::before {
@@ -38,7 +39,7 @@
 .mv-el {
   box-sizing: border-box;
   transition: all 0.2s ease;
-  border-radius: 8rpx;
+  border-radius: 0;
 }
 
 .mv-el.sel {
@@ -49,6 +50,8 @@
 .mv-el:active {
   transform: scale(0.98);
 }
+
+
 
 /* 画笔工具栏 */
 .brush-toolbar {
@@ -61,8 +64,10 @@
   border-bottom: 1rpx solid var(--border-light);
   padding: 20rpx 32rpx;
   backdrop-filter: blur(20rpx);
-  z-index: 99;
+  z-index: 999;
   animation: slideUp 0.3s ease;
+  max-height: 300rpx;
+  overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -78,15 +83,25 @@
 
 .brush-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 24rpx;
   justify-content: space-between;
 }
 
-.brush-size, .brush-color {
+.brush-size, .brush-intensity {
   display: flex;
   align-items: center;
   gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.brush-color {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  width: 100%;
 }
 
 .brush-label {
@@ -189,17 +204,86 @@
 /* 属性面板 */
 .property-panel {
   position: fixed;
-  right: 32rpx;
-  top: 200rpx;
+  left: 0;
+  right: 0;
+  bottom: 120rpx;
   background: var(--bg-card);
-  border-radius: 20rpx;
-  padding: 24rpx;
+  border-radius: 16rpx 16rpx 0 0;
+  padding: 16rpx;
   box-shadow: var(--shadow-creative);
   border: 1rpx solid var(--border-light);
-  min-width: 300rpx;
-  max-height: 600rpx;
+  border-bottom: none;
+  max-height: 40vh;
   overflow-y: auto;
   z-index: 90;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 底部操作区 */
+.bottom-actions {
+  margin-top: auto;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+/* 缩放控制 */
+.scale-control {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12rpx;
+  flex: 1;
+}
+
+.scale-label {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.scale-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+}
+
+.scale-value {
+  font-size: 20rpx;
+  color: var(--text-primary);
+  font-weight: 600;
+  min-width: 60rpx;
+  text-align: right;
+}
+
+.property-panel.collapsed {
+  transform: translateY(100%);
+}
+
+/* 添加折叠按钮 */
+.panel-toggle {
+  position: absolute;
+  top: -40rpx;
+  right: 50%;
+  transform: translateX(50%);
+  width: 80rpx;
+  height: 40rpx;
+  background: var(--bg-card);
+  border-radius: 20rpx 20rpx 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  box-shadow: 0 -4rpx 8rpx rgba(0, 0, 0, 0.1);
+  z-index: 91;
 }
 
 .panel-header {
@@ -265,15 +349,18 @@
   display: flex;
   gap: 12rpx;
   flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
 }
 
 .color-chip {
-  width: 40rpx;
-  height: 40rpx;
+  width: 50rpx;
+  height: 50rpx;
   border-radius: 50%;
   border: 3rpx solid transparent;
   transition: all 0.3s ease;
   position: relative;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .color-chip:active {
@@ -454,12 +541,19 @@
 /* 响应式设计 */
 @media (max-width: 750rpx) {
   .property-panel {
-    position: fixed;
-    left: 32rpx;
-    right: 32rpx;
-    top: auto;
-    bottom: 120rpx;
-    transform: none;
+    left: 0;
+    right: 0;
+    bottom: 100rpx;
+    max-height: 35vh;
+    padding: 12rpx;
+  }
+  
+  .panel-toggle {
+    top: -32rpx;
+    width: 60rpx;
+    height: 32rpx;
+    font-size: 20rpx;
+    border-radius: 16rpx 16rpx 0 0;
   }
   
   .toolbar {

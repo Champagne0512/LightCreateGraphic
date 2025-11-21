@@ -1,24 +1,26 @@
 <view class="editor-container">
   <!-- 画布区域 -->
-  <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px; margin-top: 40rpx;">
+  <view class="canvas-wrap" style="width: {{displayWidth}}px; height: {{displayHeight}}px;">
     <!-- 画笔图层 - 放在最上手层确保能接收触摸事件 -->
     <canvas wx:if="{{drawMode}}" canvas-id="brushCanvas" 
             style="position:absolute;left:0;top:0;width: {{displayWidth}}px; height: {{displayHeight}}px;z-index:999;"
             catchtouchstart="onBrushStart" catchtouchmove="onBrushMove" catchtouchend="onBrushEnd"
             catchtouchcancel="onBrushEnd"/>
     
-    <movable-area style="width: {{displayWidth}}px; height: {{displayHeight}}px;position:relative;z-index:1;">
+    <movable-area style="width: {{displayWidth * 1.9}}px; height: {{displayHeight * 1.9}}px;position:relative;z-index:1;left: -{{displayWidth * 0.45}}px;top: -{{displayHeight * 0.45}}px;">
       <block wx:for="{{work.elements}}" wx:key="id">
         <movable-view class="mv-el {{selectedId===item.id?'sel':''}}" direction="all"
-          x="{{ (item.x - (item._w || 80)/2) * scale }}" y="{{ (item.y - (item._h || 40)/2) * scale }}"
+          x="{{ (item.x - (item._w || 80)/2) * scale + displayWidth * 0.45 }}" y="{{ (item.y - (item._h || 40)/2) * scale + displayHeight * 0.45 }}"
           style="width: {{ (item._w || 80) * scale }}px; height: {{ (item._h || 40) * scale }}px;"
           data-id="{{item.id}}" bindtap="selectEl" bindchange="onMove" bindtouchend="onMoveEnd" inertia>
           <view wx:if="{{item.type==='text'}}" style="color: {{item.color}}; font-size: {{item.fontSize}}rpx; text-align: {{item.align||'left'}}; padding: 8rpx;">
             {{item.text}}
           </view>
           <view wx:elif="{{item.type==='rect'}}" style="width:100%;height:100%;background: {{item.color}}; border-radius: 8rpx;"></view>
-          <image wx:elif="{{item.type==='image'}}" src="{{item.src}}" mode="scaleToFill" style="width:100%;height:100%;border-radius:8rpx;"/>
+          <image wx:elif="{{item.type==='image'}}" src="{{item.src}}" mode="scaleToFill" style="width:100%;height:100%;border-radius:0;"/>
         </movable-view>
+        
+
       </block>
       <view wx:if="{{showVGuide}}" class="guide v" style="left: {{ work.size.w/2 * scale }}px;"></view>
       <view wx:if="{{showHGuide}}" class="guide h" style="top: {{ work.size.h/2 * scale }}px;"></view>
@@ -27,23 +29,13 @@
   </view>
 
   <!-- 属性面板 -->
-  <view wx:if="{{selected}}" class="property-panel">
+  <view wx:if="{{selected}}" class="property-panel {{panelCollapsed ? 'collapsed' : ''}}">
+    <view class="panel-toggle" bindtap="togglePropertyPanel">
+      {{panelCollapsed ? '◀' : '▶'}}
+    </view>
     <view class="panel-header">
       <text class="panel-icon">⚙️</text>
       <text class="panel-title">属性编辑</text>
-    </view>
-    
-    <!-- 颜色选择 -->
-    <view class="property-section">
-      <text class="section-title">颜色</text>
-      <view class="color-palette">
-        <block wx:for="{{colors}}" wx:key="*this">
-          <view class="color-chip {{selected.color===item?'active':''}}" 
-                style="background: {{item}}" 
-                data-color="{{item}}" 
-                bindtap="setColor"></view>
-        </block>
-      </view>
     </view>
 
     <!-- 文字属性 -->
@@ -62,53 +54,29 @@
       </view>
     </view>
 
-    <!-- 形状属性 -->
-    <view wx:if="{{selected && selected.type==='rect'}}" class="property-section">
-      <text class="section-title">尺寸</text>
-      <view class="property-row">
-        <text class="property-label">宽度</text>
-        <view class="slider-container">
-          <slider min="50" max="800" value="{{selected.width||100}}" data-key="width" bindchange="onPropSlider" style="flex:1;"></slider>
-          <text class="slider-value">{{selected.width||100}}px</text>
+    <!-- 底部操作区 -->
+    <view class="bottom-actions">
+      <!-- 缩放控制 -->
+      <view wx:if="{{selected}}" class="scale-control">
+        <text class="scale-label">缩放</text>
+        <view class="scale-slider-container">
+          <slider min="50" 
+                 max="500" 
+                 value="{{selected.scale || 100}}" 
+                 step="10"
+                 data-id="{{selected.id}}"
+                 bindchange="onScaleChange" 
+                 style="flex:1;"></slider>
+          <text class="scale-value">{{selected.scale || 100}}%</text>
         </view>
       </view>
-      <view class="property-row">
-        <text class="property-label">高度</text>
-        <view class="slider-container">
-          <slider min="20" max="800" value="{{selected.height||50}}" data-key="height" bindchange="onPropSlider" style="flex:1;"></slider>
-          <text class="slider-value">{{selected.height||50}}px</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 图片属性 -->
-    <view wx:if="{{selected && selected.type==='image'}}" class="property-section">
-      <text class="section-title">图片设置</text>
-      <view class="property-row">
-        <text class="property-label">宽度</text>
-        <view class="slider-container">
-          <slider min="50" max="1200" value="{{selected.width||200}}" data-key="width" bindchange="onPropSlider" style="flex:1;"></slider>
-          <text class="slider-value">{{selected.width||200}}px</text>
-        </view>
-      </view>
-      <view class="property-row">
-        <text class="property-label">高度</text>
-        <view class="slider-container">
-          <slider min="50" max="1200" value="{{selected.height||200}}" data-key="height" bindchange="onPropSlider" style="flex:1;"></slider>
-          <text class="slider-value">{{selected.height||200}}px</text>
-        </view>
-      </view>
+      
+      <!-- 操作按钮 -->
       <view class="action-buttons">
-        <button class="action-btn" bindtap="replaceImage">替换图片</button>
+        <button wx:if="{{selected && selected.type==='image'}}" class="action-btn" bindtap="replaceImage">替换</button>
+        <button class="action-btn" bindtap="duplicateSelected">复制</button>
+        <button class="action-btn" bindtap="deleteSelected">删除</button>
       </view>
-    </view>
-
-    <!-- 图层操作 -->
-    <view class="action-buttons">
-      <button class="action-btn" bindtap="bringForward">上手移</button>
-      <button class="action-btn" bindtap="sendBackward">下移</button>
-      <button class="action-btn" bindtap="duplicateSelected">复制</button>
-      <button class="action-btn" bindtap="deleteSelected">删除</button>
     </view>
   </view>
 
@@ -119,6 +87,11 @@
         <text class="brush-label">粗细</text>
         <slider min="1" max="20" value="{{brushSize}}" bindchange="onBrushSizeChange" style="width: 120rpx;"/>
         <text class="brush-value">{{brushSize}}px</text>
+      </view>
+      <view wx:if="{{drawMode==='highlighter'}}" class="brush-intensity">
+        <text class="brush-label">强度</text>
+        <slider min="0.1" max="1" step="0.1" value="{{highlighterIntensity}}" bindchange="onHighlighterIntensityChange" style="width: 120rpx;"/>
+        <text class="brush-value">{{highlighterIntensity}}</text>
       </view>
       <view class="brush-color">
         <text class="brush-label">颜色</text>
@@ -141,6 +114,10 @@
       <button class="tool-btn {{drawMode==='brush'?'active':''}}" bindtap="toggleBrushMode">
         <text>✏️</text>
         <text>画笔</text>
+      </button>
+      <button class="tool-btn {{drawMode==='highlighter'?'active':''}}" bindtap="toggleHighlighterMode">
+        <text>🖍️</text>
+        <text>荧光笔</text>
       </button>
       <button class="tool-btn {{drawMode==='eraser'?'active':''}}" bindtap="toggleEraserMode">
         <text>🧽</text>
